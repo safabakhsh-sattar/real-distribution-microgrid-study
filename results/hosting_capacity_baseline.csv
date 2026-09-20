@@ -1,0 +1,31 @@
+﻿Bus 9 completed — Capacity: ,179.0 kW
+Bus 7 completed — Capacity: ,286.0 kW
+Bus 13 completed — Capacity: ,130.0 kW
+Bus 12 completed — Capacity: ,133.0 kW
+Bus 8 completed — Capacity: ,196.0 kW
+Bus 5 completed — Capacity: ,80.0 kW
+Bus 2 completed — Capacity: ,121.0 kW
+Bus 0 completed — Capacity: ,115.0 kW
+Bus 6 completed — Capacity: ,183.0 kW
+Bus 11 completed — Capacity: ,180.0 kW
+Bus 10 completed — Capacity: ,229.0 kW
+Bus 1 completed — Capacity: ,242.0 kW
+Bus 4 completed — Capacity: ,80.0 kW
+,
+PV Hosting Capacity for Each Bus ,
+ bus  hosting_capacity_kW,
+5,80
+4,80
+0,115
+2,121
+13,130
+12,133
+9,179
+11,180
+6,183
+8,196
+10,229
+1,242
+7,286
+,
+ Minimum Network Capacity (Critical Bus): 5.0 with 80.0 kW,
