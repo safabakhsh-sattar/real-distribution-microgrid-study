@@ -45,6 +45,7 @@ print("\n=== PV Hosting Capacity for Each Bus ===")
 print(df.to_string(index=False))
 print(f"\n Minimum Network Capacity (Critical Bus): {df.iloc[0]['bus']} with {df.iloc[0]['hosting_capacity_kW']} kW")
 
+# Electrical distance from each bus to the transformer (in terms of impedance)
 import pandapower.topology as top
 
 dist = top.calc_distance_to_bus(base_net, base_net.trafo.lv_bus.iloc[0])
