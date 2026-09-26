@@ -43,6 +43,7 @@ df = pd.DataFrame(results).sort_values("hosting_capacity_kW")
 
 print("\n=== PV Hosting Capacity for Each Bus ===")
 print(df.to_string(index=False))
+df.to_csv("results/hosting_capacity_baseline.csv", index=False)
 print(f"\n Minimum Network Capacity (Critical Bus): {df.iloc[0]['bus']} with {df.iloc[0]['hosting_capacity_kW']} kW")
 
 # Electrical distance from each bus to the transformer (in terms of impedance)
