@@ -12,11 +12,11 @@ Why this network?
 
 ## Project Structure
 
-## Current Status
-Baseline hosting capacity established (critical buses: 4, 5 at 80 kW).
-Volt-VAr control (IEEE 1547) implemented and validated — critical bus
-capacity increased to ~101–102 kW (~26–27% improvement); network-wide
-average improvement ~45%. Some buses reached the 300 kW search ceiling
-and require a higher limit for exact values. Literature review: 2 papers
-critically summarized.
+   ## Current Status
+Full hosting capacity analysis complete with voltage AND thermal limits.
+Key finding: transformer thermal loading (not line loading or electrical
+distance) is the binding constraint in this network. Volt-VAr control
+alone is insufficient — under thermal constraints, it can slightly
+reduce capacity due to increased apparent power. See docs/methodology.md.
+Next: testing Volt-Watt control as an alternative strategy.
 

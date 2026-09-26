@@ -21,3 +21,14 @@
   - Network-wide average improvement: ~45%
   - 7 buses reached the 300 kW search ceiling — need higher ceiling for exact values
 - Next: raise search ceiling, write docs/methodology.md, start Week 2
+
+## September 26, 2026
+- Added thermal loading (line + transformer) constraints to hosting capacity search
+- Converted linear search to binary search (faster, more precise)
+- Diagnosed root cause: transformer at 98.8% loading is the binding constraint,
+  not line thermal limits or electrical distance
+- Key finding: Volt-VAr control can slightly reduce hosting capacity when the
+  binding constraint is transformer thermal loading (apparent power increases
+  with added Q), reversing its benefit
+- Created docs/methodology.md documenting full analysis approach
+- Next: implement Volt-Watt control as alternative, compare against Volt-VAr
