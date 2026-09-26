@@ -10,3 +10,13 @@ Why this network?
 - Directly relevant to German distribution network infrastructure — aligned with the PhD application path
 - Verifiable by any other researcher
 
+## Project Structure
+
+## Current Status
+Baseline hosting capacity established (critical buses: 4, 5 at 80 kW).
+Volt-VAr control (IEEE 1547) implemented and validated — critical bus
+capacity increased to ~101–102 kW (~26–27% improvement); network-wide
+average improvement ~45%. Some buses reached the 300 kW search ceiling
+and require a higher limit for exact values. Literature review: 2 papers
+critically summarized.
+
