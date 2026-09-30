@@ -39,11 +39,16 @@ when voltage is the binding constraint; when the binding constraint shifts
 to transformer thermal capacity, reactive power injection can reduce, not
 increase, hosting capacity.
 
-## 6. Future Work (Parked)
-Volt-Watt control was attempted as an alternative (reducing active power
-instead of injecting reactive power, avoiding the apparent-power penalty
-above). Initial implementation showed numerical oscillation in the
-iterative loop between voltage and power output — a known challenge in
-coupled power-flow/local-control simulations, typically resolved via a
-damping factor. This remains unresolved and is parked for a future
-session, not abandoned.
+## 6. Volt-Watt Control and Final Comparison
+After resolving an initial numerical oscillation (via a 0.3 damping
+factor on the iterative power update), Volt-Watt control was successfully
+implemented and compared against baseline and Volt-VAr.
+
+Result: with combined voltage and thermal constraints, all three methods
+converge toward the shared transformer bottleneck (~78-82 kW), but
+Volt-Watt consistently matches or outperforms Volt-VAr at every bus
+(e.g., bus 4: VAr=78.1 kW vs Watt=80.1 kW), because active-power
+curtailment avoids the apparent-power penalty (S=√(P²+Q²)) that
+reactive-power injection introduces. This confirms that control
+strategy effectiveness depends on which constraint (voltage vs.
+thermal) is binding — a key contribution of this study.

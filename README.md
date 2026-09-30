@@ -13,10 +13,8 @@ Why this network?
 ## Project Structure
 
   ## Current Status
-Full hosting capacity analysis complete with voltage AND thermal limits.
-Key finding: transformer thermal loading (not line loading or electrical
-distance) is the binding constraint in this network. Volt-VAr control
-alone is insufficient under thermal constraints — it can slightly reduce
-capacity due to increased apparent power. See docs/methodology.md.
-Volt-Watt control is parked (numerical instability, needs damping fix).
-
+Full three-way hosting capacity analysis complete: Baseline, Volt-VAr,
+and Volt-Watt control, under combined voltage + thermal constraints.
+Key finding: Volt-Watt consistently outperforms Volt-VAr once transformer
+thermal loading becomes the binding constraint. Analysis phase closed —
+see docs/methodology.md. Next: paper draft.
