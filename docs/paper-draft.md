@@ -27,8 +27,6 @@ to identify which strategy performs better once the binding constraint
 shifts from voltage to transformer thermal loading.
 
 ## 2. Methodology
-## 2. Methodology
-
 ### 2.1 Network Model
 The study uses the SimBench dataset (Meinecke et al., University of
 Kassel, Fraunhofer IEE, RWTH Aachen, TU Dortmund), specifically the
