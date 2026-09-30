@@ -32,3 +32,9 @@
   with added Q), reversing its benefit
 - Created docs/methodology.md documenting full analysis approach
 - Next: implement Volt-Watt control as alternative, compare against Volt-VAr
+
+## September 27, 2026
+- Finalized docs/methodology.md with full transformer-bottleneck finding
+- Volt-Watt control parked due to numerical oscillation (documented as future work)
+- Week 2 core deliverable (Volt-VAr + thermal analysis) closed
+- Next: start daily language practice, then revisit Volt-Watt with damping fix
