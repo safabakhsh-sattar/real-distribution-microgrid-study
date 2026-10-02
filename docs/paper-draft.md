@@ -3,7 +3,25 @@
 # Voltage and Thermal Constraints
 
 ## Abstract
-[Write last — 150-200 words summarizing problem, method, key result]
+Rising residential PV adoption is constrained by distribution network
+hosting capacity (HC), commonly limited by voltage rise. Smart inverter
+functions such as Volt-VAr and Volt-Watt control (IEEE 1547-2018) have
+been proposed to increase HC, but most studies evaluate these strategies
+under voltage constraints alone, without considering thermal limits of
+network equipment. This study quantifies HC on a real German low-voltage
+feeder (SimBench 1-LV-rural1, 15 buses) using pandapower, under combined
+voltage (1.05 pu) and thermal (line and transformer loading) constraints,
+and compares baseline, Volt-VAr, and Volt-Watt control via binary search.
+Results show that once the shared transformer becomes the binding
+constraint, bus-level HC collapses to a narrow band (~78-82 kW)
+independent of electrical distance, and Volt-VAr control can slightly
+reduce HC relative to no control due to the apparent-power penalty of
+reactive injection (S=√(P²+Q²)). Volt-Watt control, which curtails active
+power directly, matched or outperformed Volt-VAr at every bus. These
+findings indicate that the choice between Volt-VAr and Volt-Watt should
+depend on which constraint — voltage or thermal — is binding in the
+target network, rather than defaulting to Volt-VAr as common in prior
+literature.
 
 ## 1. Introduction
 Increasing penetration of rooftop photovoltaic (PV) systems in low-voltage
@@ -112,23 +130,60 @@ estimates. This collapsed all bus-level capacities to a narrow band
 Volt-Watt matched or outperformed Volt-VAr at every single bus.
 
 ## 4. Discussion
-The consistent underperformance of Volt-VAr relative to Volt-Watt under
-thermal constraints is explained by apparent power: S = √(P² + Q²).
-Reactive power injected to support voltage adds to S without contributing
-useful active energy delivery, pushing the transformer toward its thermal
-limit sooner. Volt-Watt, by curtailing active power directly, avoids this
-penalty entirely.
+Results confirm that once thermal constraints (particularly transformer
+loading) become binding, apparent power — not just active power —
+determines the true hosting capacity limit: S = √(P² + Q²). Volt-VAr
+control, by injecting reactive power to resolve voltage violations,
+increases S and reaches the transformer's thermal limit sooner than a
+strategy that leaves Q untouched. This explains why Volt-VAr capacity at
+critical buses (4, 5) fell slightly below the uncontrolled baseline
+(78.1 vs 80 kW).
+
+Volt-Watt control, which curtails active power directly instead of
+injecting reactive power, avoids this apparent-power penalty. The
+three-way comparison confirms this: Volt-Watt matched or outperformed
+Volt-VAr at every single bus in the network (Table 1), with the largest
+relative advantage at buses closest to the transformer (e.g., bus 7:
+81.1 kW under Volt-Watt vs 80.1 kW under Volt-VAr).
 
 This finding qualifies prior literature that treats Volt-VAr as a
-generally superior or default strategy (as implied in Alfouly et al.,
-2025): its advantage holds only while voltage remains the binding
-constraint. In transformer-limited networks — common in real single-
-transformer LV feeders — Volt-Watt is the more effective choice.
+generally preferred strategy for hosting capacity enhancement (e.g.,
+Alfouly et al., 2025, which evaluated PF vs Volt-VAr control but did not
+consider thermal constraints). The present study shows that strategy
+effectiveness is conditional on which constraint — voltage or thermal
+loading — is binding. In networks with limited transformer headroom, a
+common condition in real single-transformer LV feeders such as the one
+studied here, Volt-Watt is the more robust choice.
+
+A secondary methodological finding concerns numerical stability: the
+initial Volt-Watt implementation exhibited sustained oscillation between
+two states (full output and maximum curtailment) rather than converging,
+a known risk in iterative coupled power-flow/local-control simulations.
+Introducing a damping factor (α=0.3) resolved this, underscoring the
+importance of verifying convergence — not just final output — when
+implementing local control loops in power flow studies.
 
 ## 5. Conclusion
-[Summarize contribution: quantitative HC + thermal constraints + strategy
-comparison on a real German LV network, with actionable guidance:
-check the binding constraint before choosing a smart inverter strategy]
+This study quantified PV hosting capacity on a real German LV distribution
+feeder (SimBench 1-LV-rural1) under combined voltage and thermal
+constraints, and compared Volt-VAr and Volt-Watt smart inverter control
+strategies. Three contributions emerge:
+
+1. Electrical distance to the transformer strongly predicts hosting
+   capacity under voltage-only constraints, but this relationship
+   collapses once thermal limits are enforced — the shared transformer
+   becomes a network-wide bottleneck independent of bus location.
+2. Volt-VAr control can be counterproductive under thermal constraints,
+   slightly reducing hosting capacity relative to no control, due to the
+   apparent-power penalty of reactive injection.
+3. Volt-Watt control consistently matches or outperforms Volt-VAr once
+   the transformer is the binding constraint, making it the more reliable
+   strategy for this common real-world network configuration.
+
+Practically, these results suggest that DSOs and researchers should first
+identify which constraint — voltage or thermal — is binding in a given
+network before selecting a smart inverter control strategy, rather than
+defaulting to Volt-VAr as is common practice in the literature.
 
 ## 6. Future Work
 - Time-series hosting capacity using SimBench's annual load/generation profiles
