@@ -38,3 +38,10 @@
 - Volt-Watt control parked due to numerical oscillation (documented as future work)
 - Week 2 core deliverable (Volt-VAr + thermal analysis) closed
 - Next: start daily language practice, then revisit Volt-Watt with damping fix
+
+## October 2, 2026
+- Completed paper draft: Discussion (updated with confirmed Volt-Watt
+  results), Conclusion, and Abstract sections written
+- Full paper draft now complete end-to-end (Abstract through References)
+- Next: full read-through and revision pass, then decide on next phase
+  (submission target, or extend scope to EV/storage)
