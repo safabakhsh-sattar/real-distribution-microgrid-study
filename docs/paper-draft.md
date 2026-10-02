@@ -196,6 +196,4 @@ defaulting to Volt-VAr as is common practice in the literature.
 [2] Chathurangi et al. (2021). Comparative evaluation of solar PV hosting
     capacity enhancement using Volt-VAr and Volt-Watt control strategies.
 
-    git add docs/paper-draft.md
-git commit -m "Add first paper draft skeleton with results"
-git push
+ 
