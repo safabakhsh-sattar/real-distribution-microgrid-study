@@ -11,12 +11,13 @@ Why this network?
 - Verifiable by any other researcher
 
 ## Project Structure
+```
 data/       Raw and processed network data
 scripts/    Python scripts (analysis, simulation)
 results/    Outputs: charts, tables, reports
 papers/     Summaries of related papers
 docs/       Methodology documentation and weekly reviews
-
+```
 
   ## Current Status
 Full three-way hosting capacity analysis complete: Baseline, Volt-VAr,
