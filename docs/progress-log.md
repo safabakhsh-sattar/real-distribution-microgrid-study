@@ -46,7 +46,7 @@
 - Next: full read-through and revision pass, then decide on next phase
   (submission target, or extend scope to EV/storage)
 
-  ## October 3, 2026
+## October 3, 2026
 - Added validation test on second SimBench feeder (1-LV-urban6--0-sw)
 - Key finding: binding constraint is topology-dependent — transformer
   dominates in rural (single-transformer) feeder, lines dominate in
