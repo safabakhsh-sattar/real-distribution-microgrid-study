@@ -149,6 +149,15 @@ urban feeders with longer line runs tend toward line-bound capacity.
 Control strategy selection (Volt-VAr vs. Volt-Watt) should therefore
 account for network topology, not only constraint type in isolation.
 
+Full Volt-VAr and Volt-Watt comparison on the urban feeder confirmed the
+rural finding with full consistency: Volt-Watt matched or outperformed
+Volt-VAr at all 53 buses (100%), compared to 13/13 (100%) on the rural
+feeder. Notably, in buses where voltage never exceeded the Volt-Watt
+activation threshold (1.06 pu), Volt-Watt capacity equaled the
+uncontrolled baseline exactly, while Volt-VAr still underperformed the
+baseline — confirming that reactive power injection carries an apparent-
+power cost even when voltage support is not strictly necessary.
+
 ## 4. Discussion
 Results confirm that once thermal constraints (particularly transformer
 loading) become binding, apparent power — not just active power —
@@ -187,7 +196,11 @@ implementing local control loops in power flow studies.
 This study quantified PV hosting capacity on a real German LV distribution
 feeder (SimBench 1-LV-rural1) under combined voltage and thermal
 constraints, and compared Volt-VAr and Volt-Watt smart inverter control
-strategies. Three contributions emerge:
+strategies.This result held with full consistency (100% of buses) across two
+structurally different feeder topologies — rural (transformer-bound)
+and urban (line-bound) — indicating the finding is not an artifact of a
+single network but a general property of thermal-constrained hosting
+capacity.Three contributions emerge:
 
 1. Electrical distance to the transformer strongly predicts hosting
    capacity under voltage-only constraints, but this relationship
@@ -199,6 +212,7 @@ strategies. Three contributions emerge:
 3. Volt-Watt control consistently matches or outperforms Volt-VAr once
    the transformer is the binding constraint, making it the more reliable
    strategy for this common real-world network configuration.
+   
 
 Practically, these results suggest that DSOs and researchers should first
 identify which constraint — voltage or thermal — is binding in a given
