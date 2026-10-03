@@ -18,8 +18,7 @@ results/    Outputs: charts, tables, reports
 papers/     Summaries of related papers
 docs/       Methodology documentation and weekly reviews
 ```
-
- ## Current Status
+## Current Status
 Full hosting capacity analysis complete and validated across two
 structurally different SimBench feeders (rural, transformer-bound;
 urban, line-bound). Volt-Watt control matched or outperformed Volt-VAr
