@@ -129,6 +129,26 @@ estimates. This collapsed all bus-level capacities to a narrow band
 
 Volt-Watt matched or outperformed Volt-VAr at every single bus.
 
+### 3.4 Validation on a Second Feeder Topology
+
+To test whether the transformer-bottleneck finding generalizes, the
+voltage+thermal baseline analysis was repeated on a second SimBench
+feeder with different topology: `1-LV-urban6--0-sw` (urban, 53 buses).
+
+Results diverged sharply from the rural feeder: the transformer reached
+only 35.7% loading at the critical bus's hosting capacity, while line
+loading reached 99.8% — the binding constraint shifted from the
+transformer to individual line segments. Hosting capacity varied widely
+by bus (252–371 kW) rather than collapsing to a narrow shared band,
+consistent with line-level (rather than network-wide) constraints.
+
+This confirms that the binding constraint — transformer vs. line — is
+topology-dependent: single-transformer rural feeders with concentrated
+load tend toward transformer-bound capacity, while more distributed
+urban feeders with longer line runs tend toward line-bound capacity.
+Control strategy selection (Volt-VAr vs. Volt-Watt) should therefore
+account for network topology, not only constraint type in isolation.
+
 ## 4. Discussion
 Results confirm that once thermal constraints (particularly transformer
 loading) become binding, apparent power — not just active power —

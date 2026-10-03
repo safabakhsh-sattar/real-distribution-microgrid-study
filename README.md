@@ -19,9 +19,9 @@ papers/     Summaries of related papers
 docs/       Methodology documentation and weekly reviews
 ```
 
-  ## Current Status
-Full three-way hosting capacity analysis complete: Baseline, Volt-VAr,
-and Volt-Watt control, under combined voltage + thermal constraints.
-Key finding: Volt-Watt consistently outperforms Volt-VAr once transformer
-thermal loading becomes the binding constraint. Analysis phase closed —
-see docs/methodology.md. Next: paper draft.
+ ## Current Status
+Full hosting capacity analysis complete on primary feeder (rural):
+Baseline, Volt-VAr, and Volt-Watt under voltage + thermal constraints.
+Validated on a second feeder (urban) — confirmed that the binding
+constraint (transformer vs. line) is topology-dependent. Paper draft
+complete end-to-end (Abstract through Validation). See docs/paper-draft.md.
