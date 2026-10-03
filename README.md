@@ -20,8 +20,9 @@ docs/       Methodology documentation and weekly reviews
 ```
 
  ## Current Status
-Full hosting capacity analysis complete on primary feeder (rural):
-Baseline, Volt-VAr, and Volt-Watt under voltage + thermal constraints.
-Validated on a second feeder (urban) — confirmed that the binding
-constraint (transformer vs. line) is topology-dependent. Paper draft
-complete end-to-end (Abstract through Validation). See docs/paper-draft.md.
+Full hosting capacity analysis complete and validated across two
+structurally different SimBench feeders (rural, transformer-bound;
+urban, line-bound). Volt-Watt control matched or outperformed Volt-VAr
+at 100% of tested buses in both topologies (13/13 rural, 53/53 urban).
+Paper draft complete end-to-end (Abstract through Conclusion) —
+see docs/paper-draft.md.
