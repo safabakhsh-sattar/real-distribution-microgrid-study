@@ -78,3 +78,12 @@
     scaling with distance, while peak delivered power stays at the transformer limit
 - Old headline ("Volt-Watt outperforms Volt-VAr") retired; paper to be rewritten once after final runs
 - Next: final rural run at 0.1 kW resolution, urban sensitivity run
+
+## October 7, 2026 (final runs and paper rewrite)
+- Reran rural sensitivity at 0.1 kW tolerance and ran urban sensitivity (53 buses, 7 scenarios); urban results match an independent cloud run to 0.0 kW
+- Rural: no control 80.1-82.7 kW (1.05 pu), 82.0-83.1 kW (1.10 pu); Volt-VAr -1.5% to -3.6%; Volt-Watt default = no control; Volt-Watt adapted nameplate 91.1-403.5 kW, delivered within 0.1 kW
+- Urban: no control 252.5-371.8 kW; Volt-VAr lower at 27/53 buses (max -1.53%), equal at 26; Volt-Watt default = no control at 53/53; adapted nameplate up to 568.7 kW (bus 17), delivered within 0.1 kW
+- Correction to the earlier entry: the rural feeder is not transformer-bound at every bus. Buses 4 and 5 are voltage-bound at 1.05 pu (by 3.0 and 2.4 kW)
+- Found: SimBench base networks already contain PV (rural 160.4 kW, urban 57.1 kW). HC is additional PV on top of this, in a single snapshot. Added to paper (Section 2.1, limitations)
+- Paper rewritten with final results; figures 1 and 2 regenerated from the sensitivity CSVs
+- Open: sync docs/methodology.md, direct trafo Q/S check, time-series analysis. Language not started (user will announce)
