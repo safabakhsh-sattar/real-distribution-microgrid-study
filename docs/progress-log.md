@@ -56,3 +56,25 @@
   current finding is sufficient to close this phase
 - Next: decide between (a) closing paper draft as-is, (b) extending
   with urban VAr/Watt test, or (c) starting language per user's own timing.
+
+## October 7, 2026
+- Recomputed rural no-control baseline under voltage + thermal limits (fair comparison): 80.1–82.0 kW
+- Confirmed: Volt-VAr is below no-control at all 13 rural buses (1.0–2.9 kW lower)
+- Confirmed: all lines are NAYY 4x150SE, so path length (km) is proportional to path impedance
+- Issue found: Volt-Watt equals no-control at every bus (13/13 rural, 53/53 urban).
+  Cause: feasibility limit (1.05 pu) is below the IEEE 1547 default Volt-Watt
+  activation point (1.06 pu), so Volt-Watt never curtails inside the feasible region
+- Correction: 1.05 pu is a conservative planning limit, not the EN 50160 limit (±10%)
+- Paper claims on Volt-Watt superiority on hold until sensitivity analysis (scripts/08)
+
+## October 7, 2026 (sensitivity analysis)
+- Ran 7-scenario sensitivity on rural feeder (scripts/08_sensitivity_rural.py)
+- Self-check passed: NC_1.05 reproduces 02b results within search resolution (≤0.6 kW)
+- Findings:
+  - Feeder is transformer-bound at ~80-83 kW regardless of control or voltage limit (1.05 / 1.10)
+  - Default Volt-VAr reduces HC by 1.4-3.5% at all 13 buses, under both limits
+  - Default Volt-Watt is inert: its 1.06 pu activation is reached only above the thermal limit
+  - Tuned Volt-Watt (1.03-1.05 pu) raises nameplate HC from ~81 kW to 91-403 kW,
+    scaling with distance, while peak delivered power stays at the transformer limit
+- Old headline ("Volt-Watt outperforms Volt-VAr") retired; paper to be rewritten once after final runs
+- Next: final rural run at 0.1 kW resolution, urban sensitivity run
