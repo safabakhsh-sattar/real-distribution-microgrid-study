@@ -24,6 +24,7 @@ target network, rather than defaulting to Volt-VAr as common in prior
 literature.
 
 ## 1. Introduction
+
 Increasing penetration of rooftop photovoltaic (PV) systems in low-voltage
 (LV) distribution networks is often constrained by voltage rise, a
 phenomenon extensively studied under the term "hosting capacity" (HC).
@@ -33,8 +34,17 @@ per IEEE 1547-2018 — have been proposed to mitigate this constraint.
 However, most existing studies (e.g., Alfouly et al., 2025) evaluate
 control strategies under voltage constraints alone, using simplified
 single-feeder test systems, without quantifying hosting capacity in
-kW or considering thermal loading of network equipment. Similarly,
-Chathurangi et al. (2021) compare Volt-VAr and Volt-Watt performance
+kW or considering thermal loading of network equipment.
+Transformer thermal limitations have been independently recognized as a
+critical HC constraint: Ame-Oko and Lavrova (2024) address this via
+battery storage dispatch, while Qamar et al. (2023), in a comprehensive
+review, note that DSOs in several countries (e.g., Portugal <25%, Spain <50% and Italy <65% of the MV/LV transformer rating) impose hard limits on DG capacity as a fraction of transformer rating confirming the practical relevance of this constraint.Dissanayake
+et al. (2022) combine voltage control with dynamic line rating on a
+real Sri Lankan network but test only a single 25-node topology. However, 
+none of these studies directly compare Volt-VAr and Volt-Watt control under 
+simultaneous voltage and thermal constraints across multiple real network 
+topologies - the specific gap this study addresses.
+Similarly, Chathurangi et al. (2021) compare Volt-VAr and Volt-Watt performance
 across feeder types but do not examine the interaction between reactive
 power support and transformer thermal limits.
 
@@ -93,6 +103,70 @@ The initial linear search (1 kW steps up to 1000 kW) was computationally
 expensive. It was replaced with a binary search (1 kW tolerance),
 reducing the number of power-flow evaluations per bus from up to 1000
 to approximately 10, without loss of accuracy.
+
+### 2.7 Mathematical Formulation
+
+**Power Flow Constraints.** For each bus i, the AC power balance equations
+solved by pandapower's Newton-Raphson method are:
+
+P_i = V_i * Σ_k V_k * (G_ik*cos(θ_ik) + B_ik*sin(θ_ik))
+Q_i = V_i * Σ_k V_k * (G_ik*sin(θ_ik) - B_ik*cos(θ_ik))
+
+where V_i is voltage magnitude, θ_ik is the voltage angle difference
+between buses i and k, and G_ik, B_ik are the real and imaginary parts
+of the bus admittance matrix.
+
+**Hosting Capacity Optimization Problem.** For each bus i, the hosting
+capacity HC_i is formulated as:
+
+HC_i = max P_PV
+subject to:
+  V_min ≤ V_j ≤ V_max,  ∀j ∈ buses
+  L_l ≤ L_max,          ∀l ∈ lines
+  L_t ≤ L_max,          ∀t ∈ transformers
+
+where V_max = 1.05 pu (EN 50160), L_max = 100% (thermal rating), and
+L_l, L_t are line and transformer loading percentages, each computed as:
+
+L = |S| / S_rated × 100%,   S = √(P² + Q²)
+
+**Volt-VAr Control Law.** Reactive power output Q as a function of
+measured voltage V follows a piecewise-linear curve:
+
+Q(V) = Q1,                                    V ≤ V1
+Q(V) = Q1 + (Q2-Q1)(V-V1)/(V2-V1),            V1 < V ≤ V2
+Q(V) = Q2,                                    V2 < V ≤ V3
+Q(V) = Q3 + (Q4-Q3)(V-V3)/(V4-V3),            V3 < V ≤ V4
+Q(V) = Q4,                                    V > V4
+
+with (V1,V2,V3,V4) = (0.92, 0.98, 1.02, 1.08) pu and
+(Q1,Q2,Q3,Q4) = (+0.44, 0, 0, -0.44) per unit of inverter rating S_rated.
+
+**Volt-Watt Control Law.** Active power ratio as a function of voltage:
+
+P_ratio(V) = 1.0,                              V ≤ VW1
+P_ratio(V) = PW1 + (PW2-PW1)(V-VW1)/(VW2-VW1), VW1 < V ≤ VW2
+P_ratio(V) = PW2,                              V > VW2
+
+with (VW1, VW2) = (1.06, 1.10) pu and (PW1, PW2) = (1.0, 0.2).
+
+**Apparent Power Penalty (Key Mechanism).** The core finding of this
+study follows directly from the thermal constraint definition. For a
+fixed active power injection P, any nonzero reactive power Q increases
+apparent power:
+
+S = √(P² + Q²) > P   when Q ≠ 0
+
+Since thermal loading L is proportional to S, Volt-VAr's reactive
+injection (|Q| > 0) necessarily increases L relative to Volt-Watt's
+pure active-power curtailment (Q = 0), explaining the consistent
+underperformance of Volt-VAr once thermal constraints bind.
+
+**Damping for Numerical Stability.** To resolve oscillation in the
+iterative Volt-Watt loop, the active power update uses exponential
+smoothing:
+
+P_t = P_{t-1} + α(P_target - P_{t-1}),   α = 0.3
 
 ## 3. Results
 
@@ -229,5 +303,10 @@ defaulting to Volt-VAr as is common practice in the literature.
     hosting capacity photovoltaic systems using power factor.
 [2] Chathurangi et al. (2021). Comparative evaluation of solar PV hosting
     capacity enhancement using Volt-VAr and Volt-Watt control strategies.
+[3] Ame-Oko, O. Lavrova, "Mitigation of limitation imposed on hosting capacity in low voltage networks by their distribution transformer loading and degradation considerations," IET Energy Systems Integration, 2024. doi:10.1049/esi2.12143
+
+[4] Qamar, A. Arshad, K. Mahmoud, M. Lehtonen, "Hosting capacity in distribution grids: A review of definitions, performance indices, determination methodologies, and enhancement techniques," Energy Science & Engineering, 2023. doi:10.1002/ese3.1389
+
+[5] Dissanayake, A. Wijethunge, J. Wijayakulasooriya, J. Ekanayake, "Optimizing PV-Hosting Capacity with the Integrated Employment of Dynamic Line Rating and Voltage Regulation," Energies, vol. 15, no. 22, 8537, 2022. doi:10.3390/en15228537   
 
  
