@@ -393,10 +393,8 @@ delivered power rather than nameplate only.
   three-phase models
 
 ## References
-[1] Alfouly et al. (2025). A novel inverter control strategy for maximum
-    hosting capacity photovoltaic systems using power factor.
-[2] Chathurangi et al. (2021). Comparative evaluation of solar PV hosting
-    capacity enhancement using Volt-VAr and Volt-Watt control strategies.
+[1] A. Alfouly, M. A. Ismeil, I. Hamdan, "A novel inverter control strategy for maximum hosting capacity photovoltaic systems in distribution networks using power factor," PLOS ONE, vol. 20, e0310301, 2025. doi:10.1371/journal.pone.0310301
+[2] D. Chathurangi, U. Jayatunga, S. Perera, A. P. Agalgaonkar, T. Siyambalapitiya, "Comparative evaluation of solar PV hosting capacity enhancement using Volt-VAr and Volt-Watt control strategies," Renewable Energy, vol. 177, pp. 1063-1075, 2021. doi:10.1016/j.renene.2021.06.037
 [3] A. Ame-Oko, O. Lavrova, "Mitigation of limitation imposed on hosting
     capacity in low voltage networks by their distribution transformer
     loading and degradation considerations," IET Energy Systems
