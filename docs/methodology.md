@@ -91,15 +91,17 @@ wrong or misleading and were corrected.
 | 8 | Voltage limit labelled "EN 50160" | Incorrect: EN 50160 allows +/-10% | 1.05 pu is a planning limit; 1.10 pu added as sensitivity |
 | 9 | Sensitivity analysis (scripts 08, 08b) | Needed a Volt-Watt that works when the curve is active, and a nameplate vs delivered distinction | Volt-Watt equilibrium by bisection; report both nameplate and delivered capacity; add the adapted curve |
 | 10 | Checked what the SimBench base nets contain | The nets already include PV (rural 160.4 kW, urban 57.1 kW) | State the operating point explicitly; HC is additional PV; single-snapshot limitation added |
-| 11 | Measured transformer P, Q and S with and without Volt-VAr (script 10, rural) | Active power unchanged; reactive power supplied to the LV network up by 6.6–14.8 kvar; loading above 100% at the no-control size at all 13 buses | Volt-VAr reduction attributed to added reactive flow (rural); urban not measured |
+| 11 | Measured transformer P, Q and S with and without Volt-VAr (script 10, rural) | Active power unchanged; reactive power supplied to the LV network up by 6.6–14.8 kvar; loading above 100% at the no-control size at all 13 buses | Volt-VAr reduction attributed to added reactive flow (rural); urban measured in step 14 |
 | 12 | Checked how pandapower computes transformer loading | Default is current-based, not apparent-power-based as written earlier; at 100% loading S is about 103% of rating (LV voltage about 1.03 pu) | Definition corrected in all documents; sensitivity to a power-based criterion left open |
 | 13 | Compared documented search ceiling with the scripts | Documents said 600 kW (rural); the scripts use 2000 kW. Script 10 (2000 kW) reproduces the committed rural CSV to 0.0 kW | Documents corrected to 2000 kW on both feeders |
+| 14 | Measured limiting-line current with and without Volt-VAr (script 10b, urban) | The 26 equal-capacity buses have a PV-bus voltage of at most 1.0203 pu at the no-control limit (dead band, Q about 0); at the 27 lower buses the absorbed Q (0.7–31.8 kvar) flows through the limiting line at unchanged P and its current rises | Same mechanism confirmed on the urban feeder; the 27/26 split explained |
 
 ## 6. Verification checks performed
 
 - The rural no-control result at 1.05 pu from script 08 reproduces the script 02b baseline within the 1 kW resolution of 02b (all differences are below 1 kW).
 - Urban results from script 08b (7 scenarios, 53 buses, 371 rows) were reproduced in an independent run in a separate environment with a maximum difference of 0.0 kW.
 - Script 10 (rural) reproduces the no-control and Volt-VAr capacity limits of `sensitivity_rural.csv` at all 13 buses with 0.0 kW difference, and its printed tables from a second computer are identical to the first run.
+- Script 10b (urban) reproduces the no-control and Volt-VAr capacity limits of `sensitivity_urban.csv` at all 53 buses with 0.0 kW difference.
 - At 1.10 pu, Volt-VAr results equal those at 1.05 pu at every bus on both feeders. This is consistent with thermal-limited behaviour.
 - Volt-Watt default equals no control at every bus at both limits (13 of 13 rural, 53 of 53 urban), as expected when the curve is not activated.
 
@@ -110,7 +112,7 @@ wrong or misleading and were corrected.
 3. No inverter apparent-power limit; no P-priority or Q-priority.
 4. Balanced single-phase model; phase imbalance not modelled.
 5. Two feeders only.
-6. The cause of the Volt-VAr reduction was measured on the rural feeder (script 10): active power through the transformer unchanged, reactive power supplied to the LV network up by 6.6–14.8 kvar, loading up by 1.0–1.8 percentage points at the same PV size. It was not measured on the urban feeder (line-bound).
+6. The cause of the Volt-VAr reduction was measured on both feeders. Rural (script 10): active power through the transformer unchanged, reactive power supplied to the LV network up by 6.6–14.8 kvar, loading up by 1.0–1.8 percentage points at the same PV size. Urban (script 10b): active power through the limiting line unchanged, the absorbed reactive power (up to 31.8 kvar) flows through it, and Volt-VAr is inactive at the 26 buses whose voltage stays at or near the dead band (at most 1.0203 pu).
 7. Scripts 03 to 06 use the earlier Volt-Watt implementation (damped iteration, first no-control baseline). The paper uses scripts 08 and 08b.
 8. Transformer loading is current-based; a criterion on apparent power would be stricter by about 3% at the LV voltage found at the limit. The effect on the HC values has not been evaluated.
 

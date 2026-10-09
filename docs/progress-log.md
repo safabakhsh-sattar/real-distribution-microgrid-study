@@ -95,3 +95,10 @@
 - Correction: documents gave the rural search ceiling as 600 kW, scripts use 2000 kW; results unchanged (script 10 reproduces the committed CSV to 0.0 kW)
 - Synced: methodology (decision log steps 11-13), paper (Section 3.6, Discussion, Conclusion, limitation 7), README, defense sheet
 - Open: time-series analysis, urban line-current check, storage/EV. Language not started (user will announce)
+
+## October 9, 2026 (urban line measurement)
+- Added scripts/10b_line_pqs_urban.py: most loaded line P, Q, I and transformer loading at 53 urban buses, 3 cases each; output results/line_pqs_urban.csv; capacity limits reproduce sensitivity_urban.csv to 0.0 kW
+- Result: same mechanism as rural. At 27 buses (PV-bus voltage 1.0204-1.0432 pu at the no-control limit) Volt-VAr absorbs 0.7-31.8 kvar, which flows through the limiting line at unchanged active power; line current +0.07 to +5.8 A, loading up to 101.6%. At 26 buses (voltage at most 1.0203 pu, dead band) Q is about 0 and capacity is unchanged
+- Transformer stays below 40% in all cases (28-36% without control, up to 39.6% with Volt-VAr); the limiting line is the same with and without Volt-VAr at every bus
+- Synced: paper (3.6, Discussion, Conclusion), methodology (step 14), README, defense sheet
+- Open: time-series, storage/EV, power-based transformer criterion. Language not started (user will announce)

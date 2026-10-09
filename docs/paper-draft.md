@@ -14,11 +14,12 @@ binary search with 0.1 kW tolerance. Without control, HC ranges from
 80.1 to 82.7 kW on the rural feeder (transformer-bound) and from 252.5 to
 371.8 kW on the urban feeder (line-bound). The IEEE 1547-2018 default
 Volt-VAr curve reduces HC at every rural bus (by 1.5–3.6%) and at 27 of 53
-urban buses (by up to 1.5%), never increasing it. A direct measurement
-at the rural transformer shows the cause: for the same PV size, Volt-VAr
-leaves the active power flow unchanged but increases the reactive power
-supplied through the transformer by 6.6–14.8 kvar, which pushes its
-loading above 100%. The default Volt-Watt
+urban buses (by up to 1.5%), never increasing it. Direct measurements at
+the binding element show why: at the same PV size, Volt-VAr leaves the
+active power flow unchanged but adds reactive flow (6.6–14.8 kvar through
+the rural transformer, up to 31.8 kvar through the limiting urban line),
+which pushes its loading above 100%; urban buses that stay inside the
+Volt-VAr dead band (0.98–1.02 pu) are unaffected. The default Volt-Watt
 curve is never activated before a thermal limit is reached and is
 identical to no control at every bus of both feeders. A Volt-Watt curve
 tuned to start curtailing at 1.03 pu raises nameplate HC (up to 403.5 kW
@@ -68,9 +69,10 @@ topologies. This study addresses that gap. Its contributions are:
    tuned Volt-Watt curve raises the former but not the latter.
 4. A demonstration that the binding constraint is topology-dependent
    (transformer on the rural feeder, line on the urban feeder).
-5. A direct measurement of the transformer's active power, reactive
-   power and apparent power with and without Volt-VAr, identifying why
-   Volt-VAr lowers capacity on the rural feeder.
+5. Direct measurements of the flows through the binding element (rural
+   transformer, urban limiting line) with and without Volt-VAr,
+   identifying why Volt-VAr lowers capacity and why it leaves some buses
+   unchanged.
 
 ## 2. Methodology
 
@@ -295,16 +297,20 @@ maximum over 53 buses. Results are identical at 1.05 and 1.10 pu.
 
 The pattern matches the rural feeder. Volt-VAr is lower than no control
 at 27 of 53 buses (by up to 1.5%, at bus 17), equal at 26, and higher at
-none. Volt-Watt default equals no control at all 53 buses. Volt-Watt
+none (the split is explained in Section 3.6). Volt-Watt default equals no
+control at all 53 buses. Volt-Watt
 adapted raises nameplate HC at 9 buses (up to 568.7 kW, 2.12 times the
 uncontrolled value at bus 17), yet delivered power stays within ±0.1 kW
 of the uncontrolled value at every bus.
 
 ![Figure 2](../results/fig2_urban_comparison.png)
 
-### 3.6 Transformer P, Q and S with Volt-VAr (Rural)
-The apparent-power explanation for the Volt-VAr reduction was tested by
-measuring the flows at the LV terminal of the transformer (script 10,
+### 3.6 Flows at the Binding Element with Volt-VAr
+To test why Volt-VAr lowers capacity, the flows at the binding element
+were measured at the same PV size with and without Volt-VAr.
+
+**Rural feeder (transformer).** The apparent-power explanation was tested
+by measuring the flows at the LV terminal of the transformer (script 10,
 `results/trafo_pqs_rural.csv`). Three cases were evaluated at each of the
 13 buses: (A) no control at its own capacity limit; (B) Volt-VAr with the
 same PV size as in A; (C) Volt-VAr at its own capacity limit. Signs follow
@@ -338,6 +344,45 @@ capacity limit (C) the loading is back at 100%, with 1.2–3.0 kW less PV
 than in A. Because the loading is current-based, S at the thermal limit is
 about 103% of the rated apparent power (the LV voltage is about 1.03 pu).
 
+**Urban feeder (limiting line).** The same three cases were evaluated at
+the 53 urban buses (script 10b, `results/line_pqs_urban.csv`). The flows
+are those of the most loaded line, taken at its higher-current end. The
+limiting line is the same in A and B at every bus, and the transformer
+stays below 40% loaded in all cases (28–36% without control, up to 39.6%
+with Volt-VAr). The buses fall into two
+groups, which reproduces the split of Section 3.5 (Table 4).
+
+**Table 4.** Limiting-line flows at three urban buses: bus 17 (largest
+effect), bus 10 (just above the dead band) and bus 11 (inside the dead
+band). Positive line flow is into the line at the measured end.
+
+| Bus | Case | PV size (kW) | PV Q (kvar) | PV bus V (pu) | Line P (kW) | Line Q (kvar) | Line I (A) | Line loading (%) |
+|---|---|---|---|---|---|---|---|---|
+| 17 | A: NC at its limit | 267.9 | 0.00 | 1.0432 | 257.90 | −3.95 | 356.88 | 99.97 |
+| 17 | B: VVAR, same size | 267.9 | −31.84 | 1.0362 | 257.90 | −35.79 | 362.69 | 101.59 |
+| 17 | C: VVAR at its limit | 263.8 | −30.40 | 1.0357 | 253.80 | −34.35 | 356.93 | 99.98 |
+| 10 | A: NC at its limit | 348.6 | 0.00 | 1.0204 | 249.32 | −39.29 | 357.03 | 100.01 |
+| 10 | B: VVAR, same size | 348.6 | −0.73 | 1.0203 | 249.32 | −40.02 | 357.22 | 100.06 |
+| 10 | C: VVAR at its limit | 348.4 | −0.70 | 1.0203 | 249.12 | −39.99 | 356.94 | 99.98 |
+| 11 | A: NC at its limit | 371.2 | 0.00 | 1.0117 | 245.16 | −50.05 | 357.00 | 100.00 |
+| 11 | B: VVAR, same size | 371.2 | 0.00 | 1.0117 | 245.16 | −50.05 | 357.00 | 100.00 |
+| 11 | C: VVAR at its limit | 371.2 | 0.00 | 1.0117 | 245.16 | −50.05 | 357.00 | 100.00 |
+
+- At the 26 buses with unchanged capacity, the voltage at the PV bus at
+  the no-control limit is at most 1.0203 pu, inside or just above the
+  Volt-VAr dead band (0.98–1.02 pu). The inverter absorbs 0.4 kvar or
+  less, the line current changes by at most 0.04 A and the capacity is
+  unchanged.
+- At the 27 buses with lower capacity, the voltage at the no-control
+  limit is 1.0204–1.0432 pu and Volt-VAr absorbs 0.7–31.8 kvar. The active
+  power in the limiting line is unchanged (change of at most 0.01 kW), and
+  its reactive power changes by the same amount as the inverter's, so all
+  the absorbed reactive power is drawn through the limiting line. The line
+  current rises by 0.07–5.8 A and its loading from about 100.0% to
+  100.0–101.6%. The no-control size is infeasible with Volt-VAr at 26 of
+  the 27 buses; at the remaining one (bus 45) the loading is at 100.00%
+  and the capacity is 0.1 kW lower.
+
 ## 4. Discussion
 
 **The binding constraint decides whether voltage control matters.** On
@@ -359,9 +404,13 @@ a smaller PV size. The effect depends on the direction of the existing
 reactive flow: where the transformer carries reactive power in the
 opposite direction, absorption would reduce the current instead. Rural
 Volt-VAr HC is also the same at 1.05 and 1.10 pu, i.e. thermally bound at
-every bus. On the urban feeder (reduction of up to 1.5%, line-bound) the
-flows were not measured; the same mechanism is plausible for the line
-current but remains to be checked.
+every bus. The urban feeder (line-bound, reduction of up to 1.5%) shows the same
+mechanism at the limiting line (Section 3.6): where the PV bus voltage at
+the no-control limit is above 1.02 pu, the absorbed reactive power flows
+through the limiting line and raises its current at unchanged active
+power. Where the voltage stays inside the dead band (0.98–1.02 pu),
+Volt-VAr is inactive and the result is unchanged, which is why the
+reduction occurs at 27 of 53 buses and not at all of them.
 
 **Volt-Watt needs tuning, and tuning changes nameplate, not delivery.**
 With default IEEE 1547-2018 parameters the Volt-Watt function is inert
@@ -434,10 +483,13 @@ The main findings are:
    403.5 kW rural and 568.7 kW urban), but delivered active power stays
    within 0.1 kW of the uncontrolled value, so nameplate HC alone
    overstates the benefit.
-5. On the rural feeder, the Volt-VAr reduction is explained by a measured
-   increase of 6.6–14.8 kvar in the reactive power supplied through the
-   transformer at unchanged active power, which raises its current-based
-   loading above 100% at the no-control capacity.
+5. The Volt-VAr reduction is explained by measured flows. On the rural
+   feeder, the reactive power supplied through the transformer increases
+   by 6.6–14.8 kvar at unchanged active power; on the urban feeder, the
+   limiting line carries the absorbed reactive power (up to 31.8 kvar) at
+   unchanged active power. In both cases the current-based loading rises
+   above 100% at the no-control capacity. Urban buses whose voltage stays
+   inside the dead band (26 of 53) are unaffected.
 
 Practically, when a thermal limit binds, local voltage-control curves
 should not be relied upon to increase deliverable PV capacity; the binding
@@ -447,8 +499,7 @@ delivered power rather than nameplate only.
 ## 6. Future Work
 - Time-series hosting capacity and annual energy using SimBench profiles
   and study cases (including low-load/high-PV)
-- The same direct measurement on the urban feeder (line current) and on
-  further feeders
+- The same direct measurements on further feeders and operating points
 - Sensitivity of the results to a power-based transformer loading
   criterion
 - Storage and EV flexibility to lift the transformer ceiling

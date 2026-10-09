@@ -28,10 +28,12 @@ do not raise deliverable PV capacity. A tuned Volt-Watt curve raises the
 installed (nameplate) size but not the active power delivered, so nameplate
 capacity alone can overstate the benefit by up to a factor of five.
 
-Why Volt-VAr lowers capacity (measured on the rural transformer, script 10):
-for the same PV size, Volt-VAr leaves the active power unchanged but raises
-the reactive power the transformer supplies by 6.6 to 14.8 kvar, which lifts
-its current-based loading from about 100% to 100.7 to 101.8%.
+Why Volt-VAr lowers capacity (measured at the binding element, scripts 10
+and 10b): for the same PV size, Volt-VAr leaves the active power unchanged but
+adds reactive flow, 6.6 to 14.8 kvar through the rural transformer and up to
+31.8 kvar through the limiting urban line, lifting its current-based loading
+above 100%. Urban buses whose voltage stays in the Volt-VAr dead band
+(0.98 to 1.02 pu), 26 of 53, are unaffected.
 
 Full write-up: [docs/paper-draft.md](docs/paper-draft.md)
 
@@ -92,7 +94,8 @@ Run from the repository root.
 | 9 | `scripts/08b_sensitivity_urban.py` | Final urban analysis, 7 scenarios (about 15-30 min) | `sensitivity_urban.csv` |
 | 10 | `scripts/09_print_tables.py` | Compact tables from the two sensitivity CSVs | (console) |
 | 11 | `scripts/10_trafo_pqs_rural.py` | Transformer P, Q, S with and without Volt-VAr, rural (about 1-2 min) | `trafo_pqs_rural.csv` |
-| 12 | `scripts/07_generate_figures.py` | Figures 1 to 3 | `fig1`, `fig2`, `fig3` (.png) |
+| 12 | `scripts/10b_line_pqs_urban.py` | Limiting-line P, Q, I with and without Volt-VAr, urban (about 5-15 min) | `line_pqs_urban.csv` |
+| 13 | `scripts/07_generate_figures.py` | Figures 1 to 3 | `fig1`, `fig2`, `fig3` (.png) |
 
 `scripts/03b_diagnostic_transformer_check.py` is the diagnostic that revealed
 the transformer bottleneck. Scripts 03 to 06 are earlier steps whose
@@ -126,5 +129,5 @@ default Volt-Watt curve is inactive within the feasible region.
 
 Next steps:
 - Time-series analysis (SimBench profiles and study cases) to test whether the nameplate gain yields more annual energy
-- Repeat the direct measurement on the urban feeder (line current)
 - Storage and EV flexibility to lift the transformer ceiling
+- Sensitivity to a power-based transformer loading criterion
