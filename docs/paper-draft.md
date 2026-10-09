@@ -14,7 +14,11 @@ binary search with 0.1 kW tolerance. Without control, HC ranges from
 80.1 to 82.7 kW on the rural feeder (transformer-bound) and from 252.5 to
 371.8 kW on the urban feeder (line-bound). The IEEE 1547-2018 default
 Volt-VAr curve reduces HC at every rural bus (by 1.5–3.6%) and at 27 of 53
-urban buses (by up to 1.5%), never increasing it. The default Volt-Watt
+urban buses (by up to 1.5%), never increasing it. A direct measurement
+at the rural transformer shows the cause: for the same PV size, Volt-VAr
+leaves the active power flow unchanged but increases the reactive power
+supplied through the transformer by 6.6–14.8 kvar, which pushes its
+loading above 100%. The default Volt-Watt
 curve is never activated before a thermal limit is reached and is
 identical to no control at every bus of both feeders. A Volt-Watt curve
 tuned to start curtailing at 1.03 pu raises nameplate HC (up to 403.5 kW
@@ -64,6 +68,9 @@ topologies. This study addresses that gap. Its contributions are:
    tuned Volt-Watt curve raises the former but not the latter.
 4. A demonstration that the binding constraint is topology-dependent
    (transformer on the rural feeder, line on the urban feeder).
+5. A direct measurement of the transformer's active power, reactive
+   power and apparent power with and without Volt-VAr, identifying why
+   Volt-VAr lowers capacity on the rural feeder.
 
 ## 2. Methodology
 
@@ -93,7 +100,12 @@ at one load bus on top of the existing generation in this snapshot.
   as a sensitivity case. Only the upper limit is enforced, since PV
   injection raises voltages.
 - **Thermal:** line loading (`res_line.loading_percent`) and transformer
-  loading (`res_trafo.loading_percent`) ≤ 100%.
+  loading (`res_trafo.loading_percent`) ≤ 100%. Both are current-based
+  (pandapower default `trafo_loading="current"`): the transformer loading
+  is the larger of the HV and LV currents relative to the rated current.
+  Because I = S / (√3 · V), at the LV voltage of about 1.03 pu found at
+  the capacity limit, a loading of 100% corresponds to an apparent power
+  of about 103% of the rated value.
 
 A candidate PV size is feasible only if all constraints hold
 simultaneously.
@@ -108,8 +120,8 @@ until a constraint is violated. Two quantities are reported:
 
 Without curtailment the two are equal. Feasibility is assumed to be
 monotonic in PV size, so the largest feasible size is found by binary
-search with 0.1 kW tolerance (upper bound 600 kW rural, 2000 kW urban),
-about 13–15 power-flow evaluations per bus and scenario. An initial linear
+search with 0.1 kW tolerance (upper bound 2000 kW on both feeders), about
+15 search steps per bus and scenario (log2(2000/0.1) ≈ 14.3). An initial linear
 search (1 kW steps) was replaced because it was computationally expensive
 and, with a fixed upper bound, returned the bound itself where no
 constraint was violated. The distance from each bus to the transformer
@@ -166,7 +178,7 @@ admittance matrix.
     subject to:
       V_j ≤ V_max,          ∀ buses j       (V_max = 1.05 pu; 1.10 sensitivity)
       I_l / I_max,l ≤ 1,    ∀ lines l
-      S_t / S_rated,t ≤ 1,  ∀ transformers t,   S_t = √(P_t² + Q_t²)
+      I_t / I_rated,t ≤ 1,  ∀ transformers t,   I_t = max(I_HV, I_LV)
 
 The delivered capacity is P_del = P_n · r(V_b(P_del)), with r ≡ 1 for NC
 and VVAR.
@@ -187,11 +199,12 @@ with (V1..V4) = (0.92, 0.98, 1.02, 1.08) and (Q1..Q4) = (+0.44, 0, 0, −0.44).
     r(V) = 1 + (PW2-1)(V-VW1)/(VW2-VW1),         VW1 < V < VW2
     r(V) = PW2 = 0.2,                            V ≥ VW2
 
-**Apparent power.** For a fixed active power flow P through the
-transformer, any non-zero reactive flow Q raises S = √(P² + Q²) and
-therefore the transformer loading. Reactive absorption by the inverter
-changes the Q drawn through the transformer, which is the mechanism
-investigated in Section 4.
+**Transformer current and apparent power.** The transformer loading is
+current-based, and the current is I = S / (√3 · V) with
+S = √(P² + Q²). For a fixed active power flow P and voltage V, any
+non-zero reactive flow Q raises S and therefore the current and the
+loading. Reactive absorption by the inverter changes the Q drawn through
+the transformer, which is the mechanism measured in Section 3.6.
 
 ## 3. Results
 
@@ -289,6 +302,42 @@ of the uncontrolled value at every bus.
 
 ![Figure 2](../results/fig2_urban_comparison.png)
 
+### 3.6 Transformer P, Q and S with Volt-VAr (Rural)
+The apparent-power explanation for the Volt-VAr reduction was tested by
+measuring the flows at the LV terminal of the transformer (script 10,
+`results/trafo_pqs_rural.csv`). Three cases were evaluated at each of the
+13 buses: (A) no control at its own capacity limit; (B) Volt-VAr with the
+same PV size as in A; (C) Volt-VAr at its own capacity limit. Signs follow
+the load reference at the LV terminal: positive P is export towards the
+grid, and negative Q is reactive power supplied by the transformer to the
+LV network.
+
+**Table 3.** Transformer flows at three rural buses: bus 0 (large effect),
+bus 4 (voltage-bound at 1.05 pu) and bus 7 (small effect).
+
+| Bus | Case | PV size (kW) | PV Q (kvar) | Trafo P (kW) | Trafo Q (kvar) | Trafo S (kVA) | Trafo loading (%) |
+|---|---|---|---|---|---|---|---|
+| 0 | A: NC at its limit | 82.5 | 0.0 | 161.86 | −31.99 | 165.00 | 99.98 |
+| 0 | B: VVAR, same size | 82.5 | −11.46 | 161.82 | −43.47 | 167.55 | 101.79 |
+| 0 | C: VVAR at its limit | 79.5 | −10.75 | 158.88 | −42.73 | 164.53 | 99.96 |
+| 4 | A: NC at its limit | 80.1 | 0.0 | 158.98 | −32.18 | 162.20 | 98.32 |
+| 4 | B: VVAR, same size | 80.1 | −14.65 | 158.83 | −46.88 | 165.60 | 100.71 |
+| 4 | C: VVAR at its limit | 78.9 | −14.25 | 157.68 | −46.46 | 164.38 | 99.96 |
+| 7 | A: NC at its limit | 82.0 | 0.0 | 161.95 | −31.76 | 165.04 | 100.00 |
+| 7 | B: VVAR, same size | 82.0 | −6.59 | 161.95 | −38.36 | 166.43 | 100.99 |
+| 7 | C: VVAR at its limit | 80.3 | −6.40 | 160.25 | −38.16 | 164.73 | 99.97 |
+
+Over the 13 buses, switching Volt-VAr on at the same PV size (A to B)
+leaves the active power through the transformer practically unchanged
+(change 0.0 to −0.15 kW) but raises the reactive power supplied by the
+transformer by 6.6–14.8 kvar, on top of the roughly 32 kvar it already
+supplies without control. S rises by 1.4–3.4 kVA and the transformer
+loading rises from 98.3–100.0% to 100.7–101.8%, so the no-control
+capacity is infeasible with Volt-VAr at all 13 buses. At the Volt-VAr
+capacity limit (C) the loading is back at 100%, with 1.2–3.0 kW less PV
+than in A. Because the loading is current-based, S at the thermal limit is
+about 103% of the rated apparent power (the LV voltage is about 1.03 pu).
+
 ## 4. Discussion
 
 **The binding constraint decides whether voltage control matters.** On
@@ -299,15 +348,20 @@ ceiling. This explains why neither standard curve raises deliverable
 capacity on either feeder, in spite of the different topology and the
 different binding element (transformer versus line).
 
-**Volt-VAr can reduce capacity.** The reduction of 1.5–3.6% (rural) and up
-to 1.5% (urban) is consistent with an apparent-power effect: reactive
-absorption at high voltage adds to the reactive flow through the
-transformer or line, raising S = √(P² + Q²) at a given active power, so
-the thermal limit is reached at a slightly lower active power. A
-supporting observation from the results is that rural Volt-VAr HC is the
-same at 1.05 and 1.10 pu, i.e. it is thermally bound at every bus. A direct
-quantification of the transformer's Q and S with and without Volt-VAr
-at the capacity limit is left to follow-up work.
+**Volt-VAr can reduce capacity.** On the rural feeder the reduction of
+1.5–3.6% has a measured cause (Section 3.6). The transformer already
+supplies about 32 kvar to the LV network (load reactive power and cable
+reactance). When the Volt-VAr inverter absorbs reactive power at high
+voltage, the additional reactive power is drawn through the same
+transformer in the same direction. The active power flow is unchanged, so
+S = √(P² + Q²) and the current increase, and the 100% limit is reached at
+a smaller PV size. The effect depends on the direction of the existing
+reactive flow: where the transformer carries reactive power in the
+opposite direction, absorption would reduce the current instead. Rural
+Volt-VAr HC is also the same at 1.05 and 1.10 pu, i.e. thermally bound at
+every bus. On the urban feeder (reduction of up to 1.5%, line-bound) the
+flows were not measured; the same mechanism is plausible for the line
+current but remains to be checked.
 
 **Volt-Watt needs tuning, and tuning changes nameplate, not delivery.**
 With default IEEE 1547-2018 parameters the Volt-Watt function is inert
@@ -355,6 +409,10 @@ is essential when local controls are embedded in power-flow studies.
    them, but two cases do not establish a general rule.
 6. The 1.05 pu limit is a planning assumption; 1.10 pu is evaluated as a
    sensitivity case only.
+7. The transformer loading is current-based (pandapower default). At the
+   LV voltage of about 1.03 pu this is about 3% less strict than a
+   criterion on apparent power; the effect on the HC values was not
+   evaluated.
 
 ## 5. Conclusion
 This study quantified PV hosting capacity on two real German LV feeders
@@ -376,6 +434,10 @@ The main findings are:
    403.5 kW rural and 568.7 kW urban), but delivered active power stays
    within 0.1 kW of the uncontrolled value, so nameplate HC alone
    overstates the benefit.
+5. On the rural feeder, the Volt-VAr reduction is explained by a measured
+   increase of 6.6–14.8 kvar in the reactive power supplied through the
+   transformer at unchanged active power, which raises its current-based
+   loading above 100% at the no-control capacity.
 
 Practically, when a thermal limit binds, local voltage-control curves
 should not be relied upon to increase deliverable PV capacity; the binding
@@ -385,8 +447,10 @@ delivered power rather than nameplate only.
 ## 6. Future Work
 - Time-series hosting capacity and annual energy using SimBench profiles
   and study cases (including low-load/high-PV)
-- Direct quantification of transformer P, Q and S with and without
-  Volt-VAr at the capacity limit
+- The same direct measurement on the urban feeder (line current) and on
+  further feeders
+- Sensitivity of the results to a power-based transformer loading
+  criterion
 - Storage and EV flexibility to lift the transformer ceiling
 - Network-wide inverter control and rating-constrained inverters
 - Validation on additional SimBench feeders and with unbalanced

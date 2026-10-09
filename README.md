@@ -28,6 +28,11 @@ do not raise deliverable PV capacity. A tuned Volt-Watt curve raises the
 installed (nameplate) size but not the active power delivered, so nameplate
 capacity alone can overstate the benefit by up to a factor of five.
 
+Why Volt-VAr lowers capacity (measured on the rural transformer, script 10):
+for the same PV size, Volt-VAr leaves the active power unchanged but raises
+the reactive power the transformer supplies by 6.6 to 14.8 kvar, which lifts
+its current-based loading from about 100% to 100.7 to 101.8%.
+
 Full write-up: [docs/paper-draft.md](docs/paper-draft.md)
 
 ## Figures
@@ -61,7 +66,7 @@ Why this data?
 ## Method in brief
 
 - pandapower Newton-Raphson power flow; one PV generator added per load bus
-- Constraints: maximum voltage 1.05 pu (conservative planning limit, not the EN 50160 limit of +/-10%); line and transformer loading at most 100%
+- Constraints: maximum voltage 1.05 pu (conservative planning limit, not the EN 50160 limit of +/-10%); line and transformer loading at most 100% (current-based, pandapower default)
 - Largest feasible PV size found by binary search (0.1 kW tolerance)
 - Scenarios: no control, Volt-VAr (IEEE 1547-2018 default), Volt-Watt default (1.06-1.10 pu) and Volt-Watt adapted (1.03-1.05 pu)
 - Volt-Watt delivered power solved as the unique equilibrium by bisection
@@ -86,7 +91,8 @@ Run from the repository root.
 | 8 | `scripts/08_sensitivity_rural.py` | Final rural analysis, 7 scenarios | `sensitivity_rural.csv` |
 | 9 | `scripts/08b_sensitivity_urban.py` | Final urban analysis, 7 scenarios (about 15-30 min) | `sensitivity_urban.csv` |
 | 10 | `scripts/09_print_tables.py` | Compact tables from the two sensitivity CSVs | (console) |
-| 11 | `scripts/07_generate_figures.py` | Figures 1 to 3 | `fig1`, `fig2`, `fig3` (.png) |
+| 11 | `scripts/10_trafo_pqs_rural.py` | Transformer P, Q, S with and without Volt-VAr, rural (about 1-2 min) | `trafo_pqs_rural.csv` |
+| 12 | `scripts/07_generate_figures.py` | Figures 1 to 3 | `fig1`, `fig2`, `fig3` (.png) |
 
 `scripts/03b_diagnostic_transformer_check.py` is the diagnostic that revealed
 the transformer bottleneck. Scripts 03 to 06 are earlier steps whose
@@ -109,6 +115,7 @@ docs/       Paper draft, methodology, progress log, weekly reviews
 - No inverter apparent-power limit is imposed
 - Balanced single-phase equivalent (no phase imbalance)
 - Two feeders only
+- Transformer loading is current-based (pandapower default); a criterion on apparent power would be about 3% stricter, effect not evaluated
 
 ## Current Status
 
@@ -119,6 +126,5 @@ default Volt-Watt curve is inactive within the feasible region.
 
 Next steps:
 - Time-series analysis (SimBench profiles and study cases) to test whether the nameplate gain yields more annual energy
-- Direct quantification of transformer reactive and apparent power with Volt-VAr
+- Repeat the direct measurement on the urban feeder (line current)
 - Storage and EV flexibility to lift the transformer ceiling
-- Synchronise `docs/methodology.md` with the final method

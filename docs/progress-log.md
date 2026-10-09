@@ -87,3 +87,11 @@
 - Found: SimBench base networks already contain PV (rural 160.4 kW, urban 57.1 kW). HC is additional PV on top of this, in a single snapshot. Added to paper (Section 2.1, limitations)
 - Paper rewritten with final results; figures 1 and 2 regenerated from the sensitivity CSVs
 - Open: sync docs/methodology.md, direct trafo Q/S check, time-series analysis. Language not started (user will announce)
+
+## October 9, 2026 (direct transformer measurement)
+- Added scripts/10_trafo_pqs_rural.py: transformer P, Q, S at the LV terminal with and without Volt-VAr (13 rural buses, 3 cases each); output results/trafo_pqs_rural.csv
+- Result: at the same PV size Volt-VAr leaves transformer active power unchanged (0.0 to -0.15 kW) and raises the reactive power it supplies by 6.6-14.8 kvar; loading rises from 98.3-100.0% to 100.7-101.8%, so the no-control size is infeasible at 13/13 buses; at the Volt-VAr limit loading is back at 100% with 1.2-3.0 kW less PV
+- Correction: pandapower transformer loading is current-based (default), not apparent-power-based as written earlier; at LV voltage about 1.03 pu, 100% loading is about 103% of rated S. Documents corrected; sensitivity to a power-based criterion not evaluated
+- Correction: documents gave the rural search ceiling as 600 kW, scripts use 2000 kW; results unchanged (script 10 reproduces the committed CSV to 0.0 kW)
+- Synced: methodology (decision log steps 11-13), paper (Section 3.6, Discussion, Conclusion, limitation 7), README, defense sheet
+- Open: time-series analysis, urban line-current check, storage/EV. Language not started (user will announce)

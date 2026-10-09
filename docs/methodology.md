@@ -36,7 +36,7 @@ no confidentiality restrictions.
 | Maximum bus voltage | 1.05 pu | Conservative planning limit. **Not** the EN 50160 limit (+/-10%, i.e. 1.10 pu) |
 | Voltage sensitivity | 1.10 pu | Evaluated for no control, Volt-VAr and Volt-Watt default |
 | Line loading | 100% | `res_line.loading_percent` (current-based) |
-| Transformer loading | 100% | `res_trafo.loading_percent` (apparent-power-based) |
+| Transformer loading | 100% | `res_trafo.loading_percent` (current-based, pandapower default: larger of HV and LV current relative to rated current; at an LV voltage of about 1.03 pu, 100% corresponds to about 103% of rated apparent power) |
 
 Only the upper voltage limit is enforced because PV injection raises
 voltages. A candidate PV size is feasible only if voltage and both thermal
@@ -46,7 +46,7 @@ limits hold at the same time.
 
 - For each load bus, a PV generator (sgen) of size P_n is added to a deep copy of the base network.
 - **Nameplate HC** is the largest feasible P_n. **Delivered HC** is the active power actually injected at that size after any curtailment.
-- Search: binary search on P_n, tolerance 0.1 kW, upper bound 600 kW (rural) or 2000 kW (urban).
+- Search: binary search on P_n, tolerance 0.1 kW, upper bound 2000 kW on both feeders.
 - Assumption: feasibility is monotonic in P_n (larger PV never restores feasibility). Fine for a radial feeder with one added injection.
 - An evaluation that raises an exception (non-convergence) counts as infeasible.
 - Electrical distance: `calc_distance_to_bus` from the transformer LV bus. It returns **path length in km**, not impedance. On the rural feeder all lines are the same cable type, so path length is proportional to path impedance and is a valid proxy.
@@ -91,11 +91,15 @@ wrong or misleading and were corrected.
 | 8 | Voltage limit labelled "EN 50160" | Incorrect: EN 50160 allows +/-10% | 1.05 pu is a planning limit; 1.10 pu added as sensitivity |
 | 9 | Sensitivity analysis (scripts 08, 08b) | Needed a Volt-Watt that works when the curve is active, and a nameplate vs delivered distinction | Volt-Watt equilibrium by bisection; report both nameplate and delivered capacity; add the adapted curve |
 | 10 | Checked what the SimBench base nets contain | The nets already include PV (rural 160.4 kW, urban 57.1 kW) | State the operating point explicitly; HC is additional PV; single-snapshot limitation added |
+| 11 | Measured transformer P, Q and S with and without Volt-VAr (script 10, rural) | Active power unchanged; reactive power supplied to the LV network up by 6.6–14.8 kvar; loading above 100% at the no-control size at all 13 buses | Volt-VAr reduction attributed to added reactive flow (rural); urban not measured |
+| 12 | Checked how pandapower computes transformer loading | Default is current-based, not apparent-power-based as written earlier; at 100% loading S is about 103% of rating (LV voltage about 1.03 pu) | Definition corrected in all documents; sensitivity to a power-based criterion left open |
+| 13 | Compared documented search ceiling with the scripts | Documents said 600 kW (rural); the scripts use 2000 kW. Script 10 (2000 kW) reproduces the committed rural CSV to 0.0 kW | Documents corrected to 2000 kW on both feeders |
 
 ## 6. Verification checks performed
 
 - The rural no-control result at 1.05 pu from script 08 reproduces the script 02b baseline within the 1 kW resolution of 02b (all differences are below 1 kW).
 - Urban results from script 08b (7 scenarios, 53 buses, 371 rows) were reproduced in an independent run in a separate environment with a maximum difference of 0.0 kW.
+- Script 10 (rural) reproduces the no-control and Volt-VAr capacity limits of `sensitivity_rural.csv` at all 13 buses with 0.0 kW difference, and its printed tables from a second computer are identical to the first run.
 - At 1.10 pu, Volt-VAr results equal those at 1.05 pu at every bus on both feeders. This is consistent with thermal-limited behaviour.
 - Volt-Watt default equals no control at every bus at both limits (13 of 13 rural, 53 of 53 urban), as expected when the curve is not activated.
 
@@ -106,8 +110,9 @@ wrong or misleading and were corrected.
 3. No inverter apparent-power limit; no P-priority or Q-priority.
 4. Balanced single-phase model; phase imbalance not modelled.
 5. Two feeders only.
-6. The apparent-power explanation for the Volt-VAr reduction is consistent with the data (including the identical results at 1.05 and 1.10 pu) but the transformer P, Q and S with and without Volt-VAr at the capacity limit have not yet been measured directly.
+6. The cause of the Volt-VAr reduction was measured on the rural feeder (script 10): active power through the transformer unchanged, reactive power supplied to the LV network up by 6.6–14.8 kvar, loading up by 1.0–1.8 percentage points at the same PV size. It was not measured on the urban feeder (line-bound).
 7. Scripts 03 to 06 use the earlier Volt-Watt implementation (damped iteration, first no-control baseline). The paper uses scripts 08 and 08b.
+8. Transformer loading is current-based; a criterion on apparent power would be stricter by about 3% at the LV voltage found at the limit. The effect on the HC values has not been evaluated.
 
 ## 8. Reproducibility
 
