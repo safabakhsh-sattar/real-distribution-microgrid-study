@@ -102,3 +102,24 @@
 - Transformer stays below 40% in all cases (28-36% without control, up to 39.6% with Volt-VAr); the limiting line is the same with and without Volt-VAr at every bus
 - Synced: paper (3.6, Discussion, Conclusion), methodology (step 14), README, defense sheet
 - Open: time-series, storage/EV, power-based transformer criterion. Language not started (user will announce)
+
+## October 10, 2026 (central question and six-network snapshot)
+- Central question set: when does the default Volt-VAr curve help or hurt PV hosting capacity in LV feeders, and can a simple indicator predict it?
+- Added scripts/11_multi_feeder_snapshot.py: six SimBench networks, 113 buses, six capacities per bus (voltage only, thermal only, both, with and without Volt-VAr); hypothesis written in the script before the run; run time 57 min; reproduces script 10 at the rural buses to 0.0 kW
+- Result: thermal limit first at 89 of 113 buses, voltage first at 24. Volt-VAr higher at 0 of 89 (thermal first) and at 21 of 24 (voltage first, median +17.6%). hc_vvar = min(hc_v_vvar, hc_t_vvar) at 113 of 113 buses
+- Screening indicator r = hc_t / hc_v: 0 of 89 gained for r < 1, 19 of 19 for r >= 1.05, mixed between 1.00 and 1.05. Dead band: 20 of 20 unchanged. Thermal element: transformer on rural1 only (13 of 13), line on the other five networks (100 of 100)
+- Correction: the first summary reported a "gain" at buses where the voltage limit does not bind (Volt-VAr iteration does not converge at PV sizes of roughly 600-1000 kW); gain now reported only for voltage-first buses, `--summarize-only` added; hc_vvar unaffected
+- Consequence: the "shared transformer bottleneck" claim of Study 1 is restricted to rural1
+
+## October 11, 2026 (time series, three feeders)
+- Added scripts/12_timeseries.py: one year of 15-minute SimBench profiles on rural1, semiurb5 and urban6; capacity by a critical-step method with a verification set; energy, curtailment, violation hours and losses with the tuned Volt-Watt curve at the far bus; run time 244 min in one process (the estimate of about one hour was wrong)
+- Correction during development: a first version rounded the capacity up and a full check of rural1 bus 4 found 1 violating step of 14,278 at 106.6 kW; result now rounded down (106.5 kW, 0 violations)
+- Result: time-series capacity is 1.23 to 2.15 times the snapshot value at line- or transformer-limited buses and 0.58 to 0.85 times at voltage-limited buses of semiurb5 and urban6 (1.33 on rural1 bus 4). Sizing by the snapshot gave 273 h (semiurb5 bus 51) and 49 h (urban6 bus 17) per year above 1.05 pu
+- Tuned Volt-Watt: no hourly violation in nine cases, curtailment 8% to 32%, extra energy per extra kW 61% to 79% of the average, added losses 27% to 66% lower than without control
+- Open: Volt-VAr over the year was not simulated
+
+## October 11, 2026 (paper restructured, figures, documents)
+- Paper rewritten around the central question: new title, abstract, contributions; Methods 2.6 and 2.7; Results 3.7 and 3.8; Discussion, Limitations, Conclusion and Future Work revised
+- Added scripts/12b_binding_conditions.py (load and PV factor at the binding step, makes Table 11 reproducible) and scripts/13_figures_study2.py (figures 4 to 6)
+- Synced: methodology (decision-log steps 15-20, new Sections 8 and 9), README (key findings, script table, limitations, status), weekly reviews
+- Open: own reading of the new paper and oral drill; Volt-VAr over the year; inverter apparent-power limit; storage and EV after week 8

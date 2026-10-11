@@ -1,33 +1,37 @@
-# PV Hosting Capacity of Real Low-Voltage Feeders Under Combined Voltage and Thermal Constraints:
-# Do Standard Volt-VAr and Volt-Watt Curves Increase Deliverable Capacity?
+# When Does Default Volt-VAr Help or Hurt PV Hosting Capacity in Low-Voltage Feeders?
+# Voltage and Thermal Limits, a Screening Indicator, and Snapshot versus Time-Series Capacity on Real SimBench Networks
 
 ## Abstract
-Rising residential PV adoption is constrained by distribution network
-hosting capacity (HC). Smart-inverter functions such as Volt-VAr and
-Volt-Watt control (IEEE 1547-2018) are widely proposed to raise HC, but
-most studies evaluate them under voltage constraints alone. This study
-quantifies HC in kW on two real German low-voltage feeders from the
-SimBench dataset (rural: 15 buses, 160 kVA transformer; urban: 53 load
-buses, 630 kVA transformer) under combined voltage (1.05 pu) and thermal
-(line and transformer loading ≤ 100%) constraints, using pandapower and a
-binary search with 0.1 kW tolerance. Without control, HC ranges from
-80.1 to 82.7 kW on the rural feeder (transformer-bound) and from 252.5 to
-371.8 kW on the urban feeder (line-bound). The IEEE 1547-2018 default
-Volt-VAr curve reduces HC at every rural bus (by 1.5–3.6%) and at 27 of 53
-urban buses (by up to 1.5%), never increasing it. Direct measurements at
-the binding element show why: at the same PV size, Volt-VAr leaves the
-active power flow unchanged but adds reactive flow (6.6–14.8 kvar through
-the rural transformer, up to 31.8 kvar through the limiting urban line),
-which pushes its loading above 100%; urban buses that stay inside the
-Volt-VAr dead band (0.98–1.02 pu) are unaffected. The default Volt-Watt
-curve is never activated before a thermal limit is reached and is
-identical to no control at every bus of both feeders. A Volt-Watt curve
-tuned to start curtailing at 1.03 pu raises nameplate HC (up to 403.5 kW
-rural, 568.7 kW urban), but the active power actually delivered remains
-within 0.1 kW of the uncontrolled value. These results show that when a
-thermal limit binds, standard local voltage-control curves cannot raise
-deliverable PV capacity, and that reporting nameplate rather than
-delivered power can overstate HC by up to a factor of five.
+Smart-inverter functions such as Volt-VAr control (IEEE 1547-2018) are
+widely proposed to raise the PV hosting capacity (HC) of low-voltage (LV)
+feeders, but most studies apply voltage constraints alone. This study asks
+when the default Volt-VAr curve helps or hurts HC once voltage (1.05 pu)
+and thermal (line and transformer loading ≤ 100%) limits are enforced
+together, and whether a simple indicator can predict the outcome. Using
+pandapower on six real German LV networks from SimBench (15 to 129 buses,
+160 to 630 kVA), HC was computed in kW at 113 load buses. Without control
+the thermal limit binds first at 89 buses and the voltage limit at 24.
+Volt-VAr acts as a gain on the voltage limit and a penalty on the thermal
+limit, and the resulting HC is the smaller of the two (113 of 113 buses).
+It never raised HC where the thermal limit binds first (0 of 89; median
+−0.9%, worst −3.6%) and raised it at 21 of the 24 buses where voltage
+binds first (median +17.6%, up to +31.6%). The ratio r of thermal-only to
+voltage-only HC without control, which needs two searches without control,
+separated the cases in this sample: Volt-VAr never helped for r < 1 (0 of
+89) and helped at all 19 buses with r ≥ 1.05. Buses whose voltage stayed
+in the dead band (≤ 1.02 pu) at the uncontrolled limit were unchanged
+(20 of 20). One year of 15-minute SimBench profiles on three feeders (nine
+buses) shows that snapshot HC is a biased guide whose sign depends on the
+binding limit: where a line or the transformer binds, time-series HC is
+1.23 to 2.15 times the snapshot value; at the voltage-limited buses of the
+two larger feeders it is 0.58 to 0.85 times, and sizing the far bus by the
+snapshot gave 49 to 273 hours per year above 1.05 pu. A Volt-Watt curve
+tuned to 1.03–1.05 pu removed all hourly violations in the cases studied but curtailed 8 to 32%
+of the available energy at the sizes studied, and each extra kW of
+nameplate yielded only 61 to 79% of the average annual energy per kW.
+Volt-VAr itself was not simulated over time. The binding limit should be
+identified before an inverter control is chosen, and capacity should be
+reported as delivered power and checked against time series.
 
 ## 1. Introduction
 
@@ -57,24 +61,48 @@ transformer thermal limits.
 To the best of our knowledge, and within the literature reviewed, none of
 these studies directly compares Volt-VAr and Volt-Watt control under
 simultaneous voltage and thermal constraints across multiple real network
-topologies. This study addresses that gap. Its contributions are:
+topologies, or checks how a snapshot capacity relates to the capacity over
+a year of load and PV profiles. This study addresses these gaps and asks
+one question:
 
-1. Hosting capacity quantified in kW, bus by bus, on two real LV feeders
-   (rural and urban) under combined voltage and thermal constraints.
-2. Evidence that, once a thermal limit binds, the IEEE 1547-2018 default
-   Volt-VAr curve does not raise HC (it slightly lowers it) and the
-   default Volt-Watt curve is inactive.
-3. A distinction between *nameplate* HC (installed PV size) and
-   *delivered* HC (active power actually injected), showing that a
-   tuned Volt-Watt curve raises the former but not the latter.
-4. A demonstration that the binding constraint is topology-dependent
-   (transformer on the rural feeder, line on the urban feeder).
-5. Direct measurements of the flows through the binding element (rural
-   transformer, urban limiting line) with and without Volt-VAr,
-   identifying why Volt-VAr lowers capacity and why it leaves some buses
-   unchanged.
+> **When does the default Volt-VAr curve help or hurt PV hosting capacity
+> in LV feeders, and can a simple indicator predict it?**
+
+The question is answered in three steps. Study 1 (Sections 3.1–3.6)
+analyses two feeders in detail, bus by bus, with all control scenarios and
+direct flow measurements at the binding element. Study 2a (Section 3.7)
+extends the snapshot analysis to six networks and 113 buses and tests a
+hypothesis and a screening indicator. Study 2b (Section 3.8) repeats the
+capacity calculation with one year of 15-minute profiles on three feeders
+and examines annual energy, curtailment, limit violations and losses. The
+contributions are:
+
+1. Hosting capacity quantified in kW, bus by bus, on real LV networks
+   (two feeders in detail, six networks and 113 buses in the extension)
+   under combined voltage and thermal constraints.
+2. A decomposition of the Volt-VAr effect into a gain on the voltage limit
+   and a penalty on the thermal limit, with the resulting capacity equal
+   to the smaller of the two (verified at 113 of 113 buses). Volt-VAr never
+   raised HC where the thermal limit binds first (0 of 89).
+3. A screening indicator, r = HC(thermal only) / HC(voltage only) without
+   control, that needs two searches without control and separated the
+   cases in this sample (0 of 89 helped for r < 1, 19 of 19 helped for
+   r ≥ 1.05), together with a dead-band check (20 of 20 unchanged).
+4. Evidence that the bias of a snapshot capacity relative to a time-series
+   capacity has a sign that depends on the binding limit, and that sizing
+   by the snapshot can violate the voltage limit for tens to hundreds of
+   hours per year at far buses.
+5. A distinction between *nameplate* HC (installed PV size) and *delivered*
+   HC (active power actually injected): a tuned Volt-Watt curve raises the
+   former but, in the snapshot, not the latter; over a year it curtails 8
+   to 32% of the available energy at the sizes studied.
+6. Direct measurements of the flows through the binding element (rural
+   transformer, urban limiting line) with and without Volt-VAr, identifying
+   why Volt-VAr lowers capacity where a thermal limit binds and why it
+   leaves some buses unchanged.
 
 ## 2. Methodology
+Sections 2.1–2.5 describe the models and the search used throughout; Sections 2.6 and 2.7 describe the two extensions.
 
 ### 2.1 Network Models and Operating Point
 The study uses the SimBench dataset (Meinecke et al., 2020; University of
@@ -89,11 +117,13 @@ Newton-Raphson solver (Thurner et al., 2018).
 | Urban | `1-LV-urban6--0-sw` | 630 kVA | 111 loads at 53 load buses, 441 kW | 5 units, 57.1 kW | 67.7% (net import 392.2 kW) |
 
 All values are those stored in the SimBench network files (the slack
-voltage is 1.025 pu). The analysis is a single deterministic snapshot:
-loads and the existing PV units are taken at their stored values, and the
-SimBench time-series and study-case scaling factors are not applied.
-Hosting capacity is therefore the **additional** PV that can be connected
-at one load bus on top of the existing generation in this snapshot.
+voltage is 1.025 pu). In Sections 3.1–3.7 the analysis is a single
+deterministic snapshot: loads and the existing PV units are taken at their
+stored values, and the SimBench time-series and study-case scaling factors
+are not applied. Hosting capacity is therefore the **additional** PV that
+can be connected at one load bus on top of the existing generation in this
+snapshot. Sections 2.6 and 2.7 extend the analysis to six networks and to
+one year of 15-minute profiles.
 
 ### 2.2 Constraints
 - **Voltage:** maximum bus voltage ≤ 1.05 pu. This is a conservative
@@ -122,7 +152,7 @@ until a constraint is violated. Two quantities are reported:
 
 Without curtailment the two are equal. Feasibility is assumed to be
 monotonic in PV size, so the largest feasible size is found by binary
-search with 0.1 kW tolerance (upper bound 2000 kW on both feeders), about
+search with 0.1 kW tolerance (upper bound 2000 kW on all networks), about
 15 search steps per bus and scenario (log2(2000/0.1) ≈ 14.3). An initial linear
 search (1 kW steps) was replaced because it was computationally expensive
 and, with a fixed upper bound, returned the bound itself where no
@@ -208,7 +238,123 @@ non-zero reactive flow Q raises S and therefore the current and the
 loading. Reactive absorption by the inverter changes the Q drawn through
 the transformer, which is the mechanism measured in Section 3.6.
 
+### 2.6 Multi-Network Snapshot Study (Script 11)
+The snapshot analysis was extended to six SimBench LV networks (scenario 0,
+`-sw` variants). The same limits (1.05 pu, 100% current-based loading), the
+same binary search (0.1 kW tolerance, 2000 kW ceiling) and the same
+Volt-VAr model as in Sections 2.2–2.4 are used.
+
+| Network | Buses | Transformer (kVA) | Loads (kW) | Existing PV (kW) | Load buses | Base max. voltage (pu) | Base max. line loading (%) | Base trafo loading (%) |
+|---|---|---|---|---|---|---|---|---|
+| rural1 | 15 | 160 | 80.0 | 160.4 | 13 | 1.0265 | 41.0 | 52.5 |
+| rural2 | 97 | 250 | 202.0 | 145.4 | 93 | 1.025 | 48.5 | 39.6 |
+| rural3 | 129 | 400 | 331.0 | 190.4 | 118 | 1.025 | 30.9 | 48.6 |
+| semiurb4 | 44 | 400 | 243.0 | 6.5 | 39 | 1.025 | 63.1 | 64.8 |
+| semiurb5 | 111 | 630 | 409.0 | 137.1 | 104 | 1.025 | 45.1 | 50.7 |
+| urban6 | 59 | 630 | 441.0 | 57.1 | 53 | 1.025 | 56.6 | 67.7 |
+
+The base case of every network satisfies both limits. **Bus sample:** all 13
+load buses of rural1, and 20 load buses of each other network, evenly spaced
+by electrical distance (path impedance) from the transformer so that near and
+far buses are both included; 113 buses in total. The sample is not random and
+does not cover all buses; it was limited by computation time.
+
+**Quantities per bus.** Six capacities are computed (kW, nameplate):
+
+| Symbol | Control | Limits enforced |
+|---|---|---|
+| hc_v | none | voltage only |
+| hc_t | none | thermal only (lines and transformer) |
+| hc_nc | none | both |
+| hc_vvar | default Volt-VAr | both |
+| hc_v_vvar | default Volt-VAr | voltage only |
+| hc_t_vvar | default Volt-VAr | thermal only |
+
+From these:
+
+- **First limit** without control: *voltage* if hc_v < hc_t − 0.2 kW,
+  *thermal* if hc_t < hc_v − 0.2 kW, otherwise *both* (not observed).
+- **Effect** of Volt-VAr: *higher* if hc_vvar exceeds hc_nc by more than
+  0.2 kW, *lower* if it is below by more than 0.2 kW, otherwise *equal*
+  (0.2 kW is twice the search tolerance).
+- **Gain** g = (hc_v_vvar − hc_v) / hc_v and **penalty**
+  p = (hc_t − hc_t_vvar) / hc_t, the effect of Volt-VAr on each limit alone.
+- **Screening indicator** r = hc_t / hc_v. It uses only searches without
+  control. r > 1 means that the voltage limit binds first.
+- **Thermal element:** the element (line or transformer) at 100% loading at
+  hc_t.
+- **Dead-band check:** the voltage at the PV bus at the uncontrolled
+  capacity hc_nc, compared with the upper dead-band edge of 1.02 pu.
+
+**Consistency checks.** hc_nc = min(hc_v, hc_t) and
+hc_vvar = min(hc_v_vvar, hc_t_vvar), each within 0.2 kW, and the number of
+buses at which a search reached the 2000 kW ceiling.
+
+**Hypothesis (stated before the run).** Volt-VAr cannot raise HC where the
+thermal limit binds first. Where the voltage limit binds first, it raises HC
+unless the thermal limit is close behind.
+
+**Note on the gain.** Where the voltage limit does not bind first, hc_v is
+large (several hundred kW or more) and the Volt-VAr iteration may fail to
+converge, so hc_v_vvar there is a numerical limit and not a physical one.
+The gain is therefore reported only for buses where the voltage limit binds
+first.
+
+### 2.7 Time-Series Study (Scripts 12 and 12b)
+Three networks are used: rural1, semiurb5 and urban6 (scenario 0), with three
+load buses each (near, middle and far along the electrical distance from the
+transformer; nine buses). The control is no control in the capacity search
+(Q1) and the tuned Volt-Watt curve (1.03–1.05 pu, floor 0.2) in the energy
+analysis (Q2). Volt-VAr is not simulated over time.
+
+**Profiles.** SimBench absolute values for the same network (35,136
+15-minute steps of the leap year 2016): load active and reactive power and
+the active power of the existing PV units. The added PV follows the
+fleet-average PV profile f(t), the sum of the existing PV profiles divided by
+the sum of their nameplates, scaled to the nameplate of the added unit. f(t)
+never exceeds 0.59 (maximum 0.576 on rural1, 0.587 on semiurb5, 0.582 on
+urban6). Existing PV remains uncontrolled. Daylight steps are those with
+f > 0.001 (about 14,300 to 15,000 per year).
+
+**Q1: time-series capacity (15-minute steps, no control).** The capacity is
+the largest nameplate at which no limit is violated at any daylight step.
+Checking all steps for every candidate would be slow, so a critical-step
+method is used: daylight steps are ranked by the net feeder injection plus a
+share of the added PV; the worst 100 steps form a critical set; the capacity
+is found by bisection on that set; it is then checked on a verification set
+(the worst 1500 steps and 500 random daylight steps); any violating step is
+added to the critical set and the search is repeated, up to eight rounds,
+until the capacity holds on the verification set. The result is rounded down
+to 0.1 kW. A step that violates a limit without the added PV is excluded and
+counted. *Validation:* for rural1 bus 4 (106.5 kW), a check of all 14,278
+daylight steps found 0 violations; with the first version, which rounded
+the result up (106.6 kW), the full check found one violating step, which led
+to the rounding down.
+
+**Q2: energy, curtailment, violations and losses (hourly means, daylight
+hours).** At the far bus of each feeder three nameplate sizes are used: the
+snapshot capacity, the time-series capacity and 1.5 times the larger of the
+two. One pass over the daylight hours gives:
+
+- *available energy*, the energy of the added PV without curtailment;
+- *delivered energy* with the tuned Volt-Watt curve, the delivered power in
+  each hour being the Volt-Watt equilibrium found by bisection;
+- *curtailed share*, 1 − delivered / available, and *full-load hours*,
+  delivered energy divided by nameplate;
+- *violation hours* (voltage and thermal) without control and with Volt-Watt,
+  counted only for hours in which the limit is violated with the added PV
+  and not without it;
+- *added losses*, the annual network losses with the added PV minus those
+  without it, without control and with Volt-Watt;
+- *marginal energy*, the delivered energy gained per extra kW of nameplate
+  between two sizes.
+
+**Binding-step conditions (script 12b).** For each bus of Q1, the total load
+and the PV factor at the step that binds the capacity, compared with the
+stored (snapshot) load and with the largest load of the year.
+
 ## 3. Results
+Sections 3.1–3.6 report Study 1 (two feeders, snapshot, all control scenarios). Section 3.7 reports Study 2a (six networks, snapshot). Section 3.8 reports Study 2b (three feeders, one year of profiles).
 
 ### 3.1 Voltage-Only Baseline (Rural)
 With only the 1.05 pu limit, HC ranged from 80 kW (buses 4 and 5) to
@@ -220,10 +366,12 @@ Figure 3): the farthest buses (0.24 km) host the least, the nearest
 ![Figure 3](../results/fig3_distance_vs_capacity.png)
 
 ### 3.2 Rural Feeder Under Voltage and Thermal Constraints
-Adding the thermal limits changes the picture. The shared 160 kVA
-transformer, already at 52.5% loading in the base case because of the
-existing 160.4 kW of PV, becomes the binding constraint, and bus-level HC
-collapses to a narrow band independent of distance (Table 1).
+Adding the thermal limits changes the picture. The 160 kVA transformer,
+already at 52.5% loading in the base case because of the existing 160.4 kW
+of PV, becomes the binding constraint at 11 of the 13 buses, and bus-level HC
+collapses to a narrow band independent of distance (Table 1). This is
+specific to this small feeder: on the other five networks of Section 3.7 the
+binding element is a line.
 
 **Table 1.** Rural feeder hosting capacity (kW). Volt-VAr results are
 identical at the 1.05 and 1.10 pu limits, and Volt-Watt default equals
@@ -383,129 +531,454 @@ band). Positive line flow is into the line at the measured end.
   the 27 buses; at the remaining one (bus 45) the loading is at 100.00%
   and the capacity is 0.1 kW lower.
 
+### 3.7 Six Networks: When Does Volt-VAr Help or Hurt? (Script 11)
+
+**3.7.1 Hosting capacity and effect of Volt-VAr.** Without control, the
+median hosting capacity of the sampled buses rises from 82.3 kW on rural1 to
+281.6 kW on urban6 (Table 5). Volt-VAr is lower than no control at 71 of the
+113 buses, equal at 21 and higher at 21.
+
+**Table 5.** Hosting capacity (kW) and effect of default Volt-VAr, sampled
+buses. Equal means within 0.2 kW.
+
+| Network | Buses | HC no control, median | HC no control, min–max | HC Volt-VAr, median | Higher | Equal | Lower | Median change (%) |
+|---|---|---|---|---|---|---|---|---|
+| rural1 | 13 | 82.3 | 80.1–82.7 | 80.1 | 0 | 0 | 13 | −2.67 |
+| rural2 | 20 | 172.3 | 81.7–263.3 | 181.9 | 8 | 1 | 11 | −0.33 |
+| rural3 | 20 | 196.0 | 98.4–239.2 | 196.1 | 8 | 4 | 8 | −0.02 |
+| semiurb4 | 20 | 207.8 | 196.1–295.8 | 206.4 | 1 | 3 | 16 | −0.82 |
+| semiurb5 | 20 | 265.0 | 190.4–324.3 | 262.6 | 4 | 3 | 13 | −0.69 |
+| urban6 | 20 | 281.6 | 255.4–371.8 | 281.6 | 0 | 10 | 10 | −0.04 |
+
+The rural1 row reproduces Study 1 (all 13 buses lower; median −2.67% against
+the mean of −2.7% in Section 3.3). The urban6 row is a sample of 20 of the 53
+buses of Section 3.5.
+
+**3.7.2 Which limit binds first.** Without control the thermal limit binds
+first at 89 of 113 buses (79%) and the voltage limit at 24; the two never
+coincided (Table 6). The thermal element is the transformer at all 13 buses
+of rural1 and a line at all 100 buses of the other five networks. The
+transformer bottleneck of Section 3.2 is therefore specific to the smallest
+feeder, which carries 160.4 kW of existing PV on a 160 kVA transformer; in
+the other networks a line limits capacity and HC varies from bus to bus.
+Voltage-first buses are concentrated in rural2 (9 of 20) and rural3 (8 of 20),
+17 of the 24, and absent in urban6.
+
+**Table 6.** Limit that binds first without control, and thermal element.
+
+| Network | Voltage first | Thermal first | Both | Thermal element: transformer | Thermal element: line |
+|---|---|---|---|---|---|
+| rural1 | 2 | 11 | 0 | 13 | 0 |
+| rural2 | 9 | 11 | 0 | 0 | 20 |
+| rural3 | 8 | 12 | 0 | 0 | 20 |
+| semiurb4 | 1 | 19 | 0 | 0 | 20 |
+| semiurb5 | 4 | 16 | 0 | 0 | 20 |
+| urban6 | 0 | 20 | 0 | 0 | 20 |
+
+**3.7.3 Test of the hypothesis.** Grouping the buses by the limit that binds
+first separates the outcomes (Table 7).
+
+**Table 7.** Effect of Volt-VAr by first limit, all networks.
+
+| First limit | Buses | Higher | Equal | Lower | Median change (%) | Minimum (%) | Maximum (%) |
+|---|---|---|---|---|---|---|---|
+| Thermal | 89 | 0 | 21 | 68 | −0.90 | −3.64 | 0.00 |
+| Voltage | 24 | 21 | 0 | 3 | +17.64 | −2.11 | +31.56 |
+
+Where the thermal limit binds first, Volt-VAr never raised HC (0 of 89); it
+lowered it at 68 buses, by at most 3.6%. Where the voltage limit binds first,
+it raised HC at 21 of 24 buses, by 17.6% (median) and up to 31.6%; it
+lowered HC at the other three (down to −2.11%), two on rural1 and one on
+rural2. Per network, the median change at voltage-first buses is +20.6%
+(rural2, 9 buses), +17.6% (rural3, 8), +11.4% (semiurb5, 4), +0.9% (semiurb4,
+1) and −1.8% (rural1, 2). The hypothesis is supported in this sample.
+
+**3.7.4 Gain and penalty.** Volt-VAr changes the capacity of each limit
+separately (Table 8). The gain on the voltage limit is large (median 21% to
+31% at voltage-first buses). The penalty on the thermal limit is small
+(median 0.0% to 2.9% per network; up to 11.6% at one rural2 bus). The
+capacity with Volt-VAr is the smaller of the two, hc_vvar = min(hc_v_vvar,
+hc_t_vvar), which held at 113 of 113 buses, as did hc_nc = min(hc_v, hc_t).
+
+**Table 8.** Gain on the voltage limit (voltage-first buses only) and
+penalty on the thermal limit (all buses), in percent.
+
+| Network | Voltage-first buses | Median gain | Median penalty | Maximum penalty |
+|---|---|---|---|---|
+| rural1 | 2 | 26.3 | 2.9 | 5.0 |
+| rural2 | 9 | 30.6 | 2.4 | 11.6 |
+| rural3 | 8 | 21.4 | 1.6 | 8.4 |
+| semiurb4 | 1 | 24.8 | 0.9 | 2.4 |
+| semiurb5 | 4 | 30.6 | 1.4 | 4.2 |
+| urban6 | 0 | – | 0.0 | 1.5 |
+
+At a voltage-first bus hc_nc = hc_v, and Volt-VAr raises the capacity only if
+the penalised thermal capacity stays above the uncontrolled voltage
+capacity: hc_t (1 − p) > hc_v, that is, r > 1/(1 − p). For a penalty of 5%
+the threshold is r > 1.053; for 1–3% it is r > 1.01–1.03.
+
+**3.7.5 Screening indicator.** The indicator r = hc_t / hc_v needs only the
+two uncontrolled searches (Table 9, Figure 4).
+
+**Table 9.** Effect of Volt-VAr by r.
+
+| r | Buses | Higher | Equal | Lower | Median change (%) |
+|---|---|---|---|---|---|
+| < 1 (thermal first) | 89 | 0 | 21 | 68 | −0.90 |
+| 1.00–1.05 | 5 | 2 | 0 | 3 | −1.50 |
+| 1.05–1.10 | 3 | 3 | 0 | 0 | +4.60 |
+| 1.10–1.25 | 4 | 4 | 0 | 0 | +11.64 |
+| 1.25–1.50 | 6 | 6 | 0 | 0 | +21.40 |
+| ≥ 1.50 | 6 | 6 | 0 | 0 | +18.78 |
+
+![Figure 4](../results/fig4_effect_vs_ratio.png)
+
+In this sample Volt-VAr never raised HC for r < 1 (0 of 89) and raised it at
+all 19 buses with r ≥ 1.05. The band 1.00–1.05 is mixed (2 higher, 3 lower),
+as expected from the threshold above. The value 1.05 comes from this sample
+and from the penalties observed at these buses; it is not a general constant.
+
+**3.7.6 Dead band.** At 20 buses the voltage at the PV bus at the
+uncontrolled capacity is at most 1.02 pu, inside the Volt-VAr dead band, and
+the capacity is unchanged at all 20 (Q ≈ 0). Among the 93 buses above the
+dead band, Volt-VAr is equal at 1, higher at 21 and lower at 71.
+
+**3.7.7 Numerical checks.** At 7 buses at least one search reached the
+2000 kW ceiling; this limit never binds below it. The capacity at
+these buses is set by the other limit. Where the voltage limit is far away,
+the Volt-VAr iteration may fail to converge at PV sizes of roughly
+600–1000 kW (for example at urban6 bus 54), which is why the gain is
+reported only for voltage-first buses (Section 2.6).
+
+### 3.8 Snapshot versus Time Series (Scripts 12 and 12b)
+
+**3.8.1 Capacity over a year.** For nine buses the capacity found with one
+year of 15-minute profiles differs strongly from the snapshot capacity
+(Table 10, Figure 5). For every bus the capacity holds on all 15-minute steps
+of the verification set (0 unresolved violations; no result at the 2000 kW
+ceiling).
+
+**Table 10.** Snapshot and time-series hosting capacity, no control (kW).
+Binding time is the step at which the time-series capacity is reached.
+
+| Network | Bus | Distance (Ω) | Snapshot HC | Time-series HC | Ratio | Limit at binding step | Binding time |
+|---|---|---|---|---|---|---|---|
+| rural1 | 7 | 0.0051 | 82.0 | 175.7 | 2.14 | transformer | 20 May 12:00 |
+| rural1 | 11 | 0.052 | 82.3 | 176.7 | 2.15 | transformer | 20 May 12:00 |
+| rural1 | 4 | 0.2453 | 80.1 | 106.5 | 1.33 | voltage | 27 Jul 12:00 |
+| semiurb5 | 74 | 0.0131 | 324.3 | 397.4 | 1.23 | line | 24 May 11:00 |
+| semiurb5 | 72 | 0.1929 | 290.2 | 246.5 | 0.85 | voltage | 24 Jul 11:00 |
+| semiurb5 | 51 | 0.3889 | 190.4 | 110.5 | 0.58 | voltage | 24 Jul 11:00 |
+| urban6 | 54 | 0.014 | 265.5 | 439.3 | 1.65 | line | 24 May 11:00 |
+| urban6 | 50 | 0.096 | 266.7 | 442.6 | 1.66 | line | 24 May 11:00 |
+| urban6 | 17 | 0.2589 | 267.9 | 224.7 | 0.84 | voltage | 24 Jul 11:00 |
+
+![Figure 5](../results/fig5_snapshot_vs_timeseries.png)
+
+The time-series capacity is above the snapshot capacity at all six buses where
+a transformer or line binds (ratio 1.23 to 2.15) and at the voltage-limited
+far bus of rural1 (1.33), and below it at the voltage-limited buses of
+semiurb5 and urban6 (0.58 to 0.85). Both directions occur on semiurb5 and
+urban6. The near and middle urban6 buses needed one refinement round of the
+critical-step search.
+
+**3.8.2 Why the bias has a sign.** In the snapshot, the existing PV and the
+added PV produce at nameplate and the loads are at their stored values. In the
+profiles, PV output never exceeds 0.59 of nameplate and midday load is a small
+share of the stored load (Table 11).
+
+**Table 11.** Conditions at the binding step (script 12b). Stored load is the
+total load of the SimBench network file; profile peak is the largest total
+load of the year.
+
+| Network | Stored load (kW) | Profile peak (kW) | Stored / peak | Largest PV factor |
+|---|---|---|---|---|
+| rural1 | 80.0 | 74.4 | 1.08 | 0.576 |
+| semiurb5 | 409.0 | 185.7 | 2.20 | 0.587 |
+| urban6 | 441.0 | 186.1 | 2.37 | 0.582 |
+
+| Network | Bus | Limit | Binding time | Load at binding step (kW) | Share of stored load (%) | PV factor |
+|---|---|---|---|---|---|---|
+| rural1 | 7, 11 | transformer | 20 May 12:00 | 25.8 | 32.3 | 0.569 |
+| rural1 | 4 | voltage | 27 Jul 12:00 | 16.3 | 20.4 | 0.531 |
+| semiurb5 | 74 | line | 24 May 11:00 | 48.1 | 11.8 | 0.587 |
+| semiurb5 | 72, 51 | voltage | 24 Jul 11:00 | 60.6 | 14.8 | 0.570 |
+| urban6 | 54, 50 | line | 24 May 11:00 | 79.0 | 17.9 | 0.582 |
+| urban6 | 17 | voltage | 24 Jul 11:00 | 56.4 | 12.8 | 0.567 |
+
+Two effects follow, and they push in opposite directions. (i) The PV factor:
+the added PV, and the existing PV, inject at most 0.59 of nameplate, which by
+itself would allow up to about 1/0.59 = 1.7 times the nameplate (more on
+rural1, where the existing PV is also scaled down). (ii) The load: the load
+present at the binding step is 12–32% of the stored load, so there is less
+load to offset the injection, which lowers the capacity. Where a thermal
+limit binds near the transformer, effect (i) outweighs effect (ii) (ratios
+1.23 to 2.15). Where the voltage limit binds at a far bus, effect (ii)
+outweighs effect (i) in semiurb5 and urban6, where the load at the binding
+step is about 350 kW and 385 kW below the stored load (the stored load is 2.2
+and 2.4 times the largest load of the year), but not on rural1, where it is
+only 64 kW below (stored load 80.0 kW, profile peak 74.4 kW). This
+explanation is consistent with the numbers but is not a formal decomposition
+of the two effects.
+
+**3.8.3 Energy, curtailment, violations and losses.** At the far bus of each
+feeder, three sizes were run through the year with hourly means (Table 12).
+
+**Table 12.** Annual results at the far bus with the tuned Volt-Watt curve
+(1.03–1.05 pu, floor 0.2). NC is no control; VW is Volt-Watt. Violation hours
+count hours in which a limit is violated with the added PV and not without it.
+Added losses are relative to the network without the added PV.
+
+| Network, bus | Size case | Size (kW) | Available (MWh) | Delivered, VW (MWh) | Curtailed (%) | Full-load hours (VW) | Hours above 1.05 pu, NC | Hours violated, VW (voltage / thermal) | Added losses NC (kWh) | Added losses VW (kWh) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| rural1, 4 | snapshot | 80.1 | 51.98 | 47.60 | 8.42 | 594 | 0 | 0 / 0 | 451 | 328 |
+| rural1, 4 | time series | 106.5 | 69.11 | 59.99 | 13.19 | 563 | 0 | 0 / 0 | 790 | 496 |
+| rural1, 4 | 1.5 × larger | 159.8 | 103.70 | 80.99 | 21.90 | 507 | 266 | 0 / 0 | 1753 | 843 |
+| semiurb5, 51 | snapshot | 190.4 | 125.73 | 98.23 | 21.88 | 516 | 273 | 0 / 0 | 2031 | 947 |
+| semiurb5, 51 | time series | 110.5 | 72.97 | 64.67 | 11.38 | 585 | 0 | 0 / 0 | 698 | 449 |
+| semiurb5, 51 | 1.5 × larger | 285.6 | 188.60 | 128.42 | 31.91 | 450 | 696 | 0 / 0 | 4476 | 1521 |
+| urban6, 17 | snapshot | 267.9 | 176.79 | 149.16 | 15.63 | 557 | 49 | 0 / 0 | 1811 | 930 |
+| urban6, 17 | time series | 224.7 | 148.28 | 131.06 | 11.62 | 583 | 0 | 0 / 0 | 1155 | 668 |
+| urban6, 17 | 1.5 × larger | 401.8 | 265.15 | 194.88 | 26.50 | 485 | 513 | 0 / 0 | 4686 | 1738 |
+
+*Violations.* No thermal limit is violated in any of the nine cases (hourly
+means, with or without control). Sizing by the snapshot capacity gives 273
+hours per year above 1.05 pu at semiurb5 bus 51 and 49 hours at urban6 bus 17;
+at rural1 bus 4, the snapshot capacity itself causes none, but 1.5 times the
+time-series capacity causes 266 hours. At the time-series capacity there are
+none by construction. With the tuned Volt-Watt curve, no hour violates a
+limit in any of the nine cases.
+
+*Curtailment.* The tuned curve curtails 8.4% to 31.9% of the available
+energy. At the time-series capacities the curtailed share is 11.4% to 13.2%;
+at 1.5 times the larger capacity it is 21.9% to 31.9%.
+
+*Marginal energy.* A larger nameplate delivers more energy, but less per kW
+than the average (Table 13): between 317 and 469 kWh per extra kW, which is
+61% to 79% of the average annual energy per kW at the lower size.
+
+**Table 13.** Delivered energy gained per extra kW of nameplate with the
+tuned Volt-Watt curve.
+
+| Network, bus | From (kW) | To (kW) | Extra energy per extra kW (kWh) | Average full-load hours at the lower size | Share of average (%) |
+|---|---|---|---|---|---|
+| rural1, 4 | 80.1 | 106.5 | 469 | 594 | 79 |
+| rural1, 4 | 106.5 | 159.8 | 394 | 563 | 70 |
+| semiurb5, 51 | 110.5 | 190.4 | 420 | 585 | 72 |
+| semiurb5, 51 | 190.4 | 285.6 | 317 | 516 | 61 |
+| urban6, 17 | 224.7 | 267.9 | 419 | 583 | 72 |
+| urban6, 17 | 267.9 | 401.8 | 341 | 557 | 61 |
+
+![Figure 6](../results/fig6_energy_curtailment.png)
+
+*Losses.* The added PV increases network losses by 451 to 4686 kWh per year
+without control. With the tuned curve the increase is lower in every case, by
+27% to 66%, because the curtailed energy no longer flows through the feeder.
+The available energy is about 650–660 kWh per kW of nameplate in all nine
+cases; this is a property of the SimBench PV profile, so the absolute energy
+values should be read as relative figures.
+
 ## 4. Discussion
 
-**The binding constraint decides whether voltage control matters.** On
-both feeders the thermal limit is reached before the voltage limit
-(except at the two most remote rural buses, by 3 kW or less). Local
-voltage-control curves act on voltage; they cannot move a thermal
-ceiling. This explains why neither standard curve raises deliverable
-capacity on either feeder, in spite of the different topology and the
-different binding element (transformer versus line).
+**The binding limit decides whether Volt-VAr helps.** Volt-VAr acts on voltage
+and adds reactive current. It therefore works as a gain on the voltage limit
+(median +21% to +31% of the voltage-limited capacity at voltage-first buses)
+and as a penalty on the thermal limit (median 0.0–2.9%, up to 11.6% at one
+bus). The capacity with Volt-VAr is the smaller of the two, which held at all
+113 buses. Where the thermal limit binds first, only the penalty is felt:
+0 of 89 buses gained and the loss was at most 3.6%. Where the voltage limit
+binds first, the gain wins unless the thermal limit is close behind. The
+earlier statement that standard curves cannot raise HC on the two feeders of
+Study 1 is therefore correct for those feeders (rural1: thermal first at 11 of
+13 buses; urban6: thermal first at 20 of 20 sampled buses) but not general:
+at 24 of 113 buses, concentrated in rural2 and rural3, voltage binds first and
+Volt-VAr raised HC at 21 of them.
 
-**Volt-VAr can reduce capacity.** On the rural feeder the reduction of
-1.5–3.6% has a measured cause (Section 3.6). The transformer already
-supplies about 32 kvar to the LV network (load reactive power and cable
-reactance). When the Volt-VAr inverter absorbs reactive power at high
-voltage, the additional reactive power is drawn through the same
-transformer in the same direction. The active power flow is unchanged, so
-S = √(P² + Q²) and the current increase, and the 100% limit is reached at
-a smaller PV size. The effect depends on the direction of the existing
-reactive flow: where the transformer carries reactive power in the
-opposite direction, absorption would reduce the current instead. Rural
-Volt-VAr HC is also the same at 1.05 and 1.10 pu, i.e. thermally bound at
-every bus. The urban feeder (line-bound, reduction of up to 1.5%) shows the same
-mechanism at the limiting line (Section 3.6): where the PV bus voltage at
-the no-control limit is above 1.02 pu, the absorbed reactive power flows
-through the limiting line and raises its current at unchanged active
-power. Where the voltage stays inside the dead band (0.98–1.02 pu),
-Volt-VAr is inactive and the result is unchanged, which is why the
+**A simple indicator.** The ratio r = hc_t / hc_v, obtained from two searches
+without control, separated the outcomes in this sample: 0 of 89 buses
+gained for r < 1, and all 19 gained for r ≥ 1.05. Between 1.00 and 1.05
+the outcome is mixed. The threshold is explained by the gain–penalty model:
+Volt-VAr helps at a voltage-first bus if r > 1/(1 − p), where p is the
+penalty on the thermal limit at that bus. The value of 1.05 describes the
+penalties observed here (median 0.9–2.9% per network, maximum 11.6% at one
+bus) and is not a general constant; a bus with a large penalty and r just
+above 1.05 could still lose. The indicator was derived and tested on the same
+113 buses and has not been tested on other networks. The dead-band check is a
+second, even simpler screen: at the 20 buses whose voltage stayed at or below
+1.02 pu at the uncontrolled capacity, Volt-VAr changed nothing.
+
+**Why Volt-VAr can reduce capacity (measured).** On the rural feeder the
+reduction of 1.5–3.6% has a measured cause (Section 3.6). The transformer
+already supplies about 32 kvar to the LV network (load reactive power and
+cable reactance). When the Volt-VAr inverter absorbs reactive power at high
+voltage, the additional reactive power is drawn through the same transformer
+in the same direction. The active power flow is unchanged, so
+S = √(P² + Q²) and the current increase, and the 100% limit is reached at a
+smaller PV size. The effect depends on the direction of the existing reactive
+flow: where the transformer carries reactive power in the opposite direction,
+absorption would reduce the current instead. The urban feeder (line-bound,
+reduction of up to 1.5%) shows the same mechanism at the limiting line:
+where the PV bus voltage at the no-control limit is above 1.02 pu, the
+absorbed reactive power flows through the limiting line and raises its
+current at unchanged active power. Where the voltage stays inside the dead
+band, Volt-VAr is inactive and the result is unchanged, which is why the
 reduction occurs at 27 of 53 buses and not at all of them.
 
-**Volt-Watt needs tuning, and tuning changes nameplate, not delivery.**
-With default IEEE 1547-2018 parameters the Volt-Watt function is inert
-whenever the planning voltage limit is below its activation voltage.
-Adapting the curve makes it act and raises the installable size
-substantially, but all the additional capacity is curtailed at the
-times the limit would be exceeded. A study reporting only nameplate HC
-would overstate the benefit by up to five times at the farthest rural
-buses. This is why delivered active power should be reported alongside
-nameplate HC. Whether the additional installed capacity yields more annual
-energy, because most hours are far below the worst-case snapshot, requires
-a time-series study.
+**A snapshot capacity is a biased guide, and the sign of the bias depends on
+the binding limit.** With one year of profiles, the capacity of buses limited
+by a line or the transformer is 1.23 to 2.15 times the snapshot value, because
+PV never produces more than 0.59 of nameplate. At the voltage-limited buses of
+the two larger feeders it is 0.58 to 0.85 times the snapshot value, because
+the snapshot keeps the full stored load, which is 2.2 to 2.4 times the largest
+load of the year, while the binding step has far less. A snapshot analysis
+can therefore be too conservative at near buses and too optimistic at far
+buses of the same feeder. A practical consequence is the violation hours:
+sizing the far bus of semiurb5 and urban6 by the snapshot capacity gave 273
+and 49 hours per year above 1.05 pu (hourly means; 15-minute peaks may add
+more). The mechanism is consistent with the data but not a formal
+decomposition (Section 3.8.2).
 
-**Implications.** For thermally bound feeders, raising HC requires
-measures that lift the thermal ceiling or absorb the surplus, for
-example storage (as in Ame-Oko and Lavrova, 2024), dynamic line rating
-(Dissanayake et al., 2022) or reinforcement, rather than standard
-inverter curves. Because the binding element differs between feeders, DSOs
-should first identify which constraint is binding before selecting a
-strategy. This qualifies the assumption in parts of the literature
-(e.g., Alfouly et al., 2025) that smart-inverter control generally
+**Volt-Watt needs tuning, and tuning changes nameplate, not delivery.** With
+default IEEE 1547-2018 parameters the Volt-Watt function is inert whenever
+the planning voltage limit is below its activation voltage. Adapting the curve
+makes it act and raises the installable size, but in the snapshot all the
+additional capacity is curtailed at the times the limit would be exceeded; at
+the farthest rural buses nameplate HC overstates the delivered power by up to
+five times. Over a year, the tuned curve removed every hourly violation in the
+nine cases, at the price of curtailing 8% to 32% of the available energy at
+the sizes studied. An extra kW of nameplate delivered 61% to 79% of the
+average annual energy per kW, so the installed size grows faster than the
+energy. Added network losses were 27% to 66% lower with the tuned curve than
+without control. These energy results come from three far buses on three
+feeders, one weather year and hourly means; they show the direction and the
+order of magnitude, not a general yield.
+
+**Implications.** For thermally bound feeders, raising HC requires measures
+that lift the thermal ceiling or absorb the surplus, for example storage (as
+in Ame-Oko and Lavrova, 2024), dynamic line rating (Dissanayake et al., 2022)
+or reinforcement, rather than standard inverter curves. Because the binding
+element differs between feeders, and between buses of one feeder, a DSO
+should first identify which limit binds, which two searches without control
+do, before selecting a strategy. Capacity should be reported as delivered
+power and checked against time series, not taken from a single snapshot or
+from nameplate alone. This qualifies the assumption in parts of the
+literature (e.g., Alfouly et al., 2025) that smart-inverter control generally
 raises hosting capacity.
 
-**Numerical note.** The first Volt-Watt implementation oscillated between
+**Numerical notes.** (i) The first Volt-Watt implementation oscillated between
 two states (full output and maximum curtailment). Damping (α=0.3) reduced
-this, and the final analysis replaced iteration by a bisection that finds
-the unique equilibrium. Verifying convergence, not only the final output,
-is essential when local controls are embedded in power-flow studies.
+this, and the final analysis replaced iteration by a bisection that finds the
+unique equilibrium. (ii) The first summary of Study 2a reported a "gain" at
+buses where the voltage limit does not bind; there the Volt-VAr iteration may
+not converge at PV sizes of roughly 600–1000 kW, so the value was an
+artefact, and the gain is now reported only for voltage-first buses. (iii) The
+first version of the time-series search rounded the capacity up and a full
+check found one violating step; the result is now rounded down and verified.
+Verifying convergence and constraints, not only the final output, is
+essential when local controls and critical-step methods are embedded in
+power-flow studies.
 
 **Limitations.**
-1. A single deterministic snapshot is analysed (existing PV at stored
-   output, loads at stored values). The SimBench study cases (for
-   example, low load with high PV and a raised slack voltage) and
-   annual profiles are not evaluated, so absolute HC values are specific
-   to this operating point.
-2. The existing PV units are uncontrolled, and only the added unit
-   applies Volt-VAr or Volt-Watt. Network-wide control could change the
-   outcome.
-3. No inverter apparent-power limit is imposed: reactive power is added
-   without reducing active power. A rating-constrained inverter (with
-   P-priority or Q-priority) could change the Volt-VAr result.
-4. The power flow is a balanced single-phase equivalent; phase imbalance
-   is not modelled.
-5. Two feeders are analysed. The qualitative result is consistent across
-   them, but two cases do not establish a general rule.
-6. The 1.05 pu limit is a planning assumption; 1.10 pu is evaluated as a
-   sensitivity case only.
-7. The transformer loading is current-based (pandapower default). At the
-   LV voltage of about 1.03 pu this is about 3% less strict than a
-   criterion on apparent power; the effect on the HC values was not
-   evaluated.
+1. Sections 3.1–3.7 are single deterministic snapshots at the stored
+   operating point (existing PV at stored output, loads at stored values).
+   Section 3.8 uses profiles for only three feeders, three buses per feeder
+   for capacity, and the far bus only for energy.
+2. The sample of Study 2a is 113 buses of six German SimBench networks
+   (scenario 0): all buses of rural1 and 20 evenly spaced buses of each other
+   network. The counts (0 of 89, 19 of 19, 20 of 20) are counts in this
+   sample, not probabilities, and the indicator was not tested on other
+   networks.
+3. The existing PV units are uncontrolled, and only the added unit applies
+   Volt-VAr or Volt-Watt. Network-wide control could change the outcome.
+4. No inverter apparent-power limit is imposed: reactive power is added
+   without reducing active power (S up to about 1.09 times the nameplate under
+   Volt-VAr). A rating-constrained inverter (with P-priority or Q-priority)
+   could change the Volt-VAr result.
+5. The power flow is a balanced single-phase equivalent; phase imbalance is
+   not modelled.
+6. The time-series study uses one weather year (2016) and one fleet-average PV
+   profile for the added unit, so there is no diversity between units. The
+   energy, violation and loss results use hourly means, which hide
+   15-minute peaks. The capacity search uses a critical-step method with a
+   verification set, not an exhaustive check of every step (validated on the
+   full year for one bus). Steps that violate a limit without the added PV
+   are excluded.
+7. Volt-VAr was not simulated in the time series. The central question is
+   therefore answered with snapshots; whether the indicator and the gain–
+   penalty split hold over a year is untested.
+8. The 1.05 pu limit is a planning assumption; 1.10 pu was evaluated as a
+   sensitivity case on two feeders only.
+9. The transformer loading is current-based (pandapower default). At the LV
+   voltage of about 1.03 pu this is about 3% less strict than a criterion on
+   apparent power; the effect on the HC values was not evaluated.
+10. The explanation of the snapshot-to-time-series ratio (PV factor and load
+    at the binding step) is consistent with the numbers but is not a formal
+    decomposition.
+11. The absolute energy values depend on the SimBench PV profile (about
+    650–660 kWh per kW of nameplate) and should be read as relative.
 
 ## 5. Conclusion
-This study quantified PV hosting capacity on two real German LV feeders
-(SimBench rural and urban) under combined voltage and thermal
-constraints and compared no control, Volt-VAr and Volt-Watt control.
-The main findings are:
+This study asked when the default Volt-VAr curve helps or hurts PV hosting
+capacity in LV feeders when voltage and thermal limits are enforced together,
+and whether a simple indicator can predict it. Using SimBench networks, the
+main findings are:
 
-1. Under voltage-only constraints, HC on the rural feeder decreases
-   strongly with distance to the transformer (ρ = −0.98), but once thermal
-   limits are enforced this relationship collapses: the shared 160 kVA
-   transformer bounds all buses at 80.1–82.7 kW.
-2. The binding constraint depends on topology: transformer on the rural
-   feeder, line on the urban feeder (transformer 35.7%, line 99.8% at the
-   critical bus).
-3. On both feeders the IEEE 1547-2018 default Volt-VAr curve does not
-   increase HC and lowers it at most buses (by up to 3.6%), and the
-   default Volt-Watt curve is identical to no control.
-4. A Volt-Watt curve tuned to 1.03–1.05 pu raises nameplate HC (up to
-   403.5 kW rural and 568.7 kW urban), but delivered active power stays
-   within 0.1 kW of the uncontrolled value, so nameplate HC alone
-   overstates the benefit.
-5. The Volt-VAr reduction is explained by measured flows. On the rural
-   feeder, the reactive power supplied through the transformer increases
-   by 6.6–14.8 kvar at unchanged active power; on the urban feeder, the
-   limiting line carries the absorbed reactive power (up to 31.8 kvar) at
-   unchanged active power. In both cases the current-based loading rises
-   above 100% at the no-control capacity. Urban buses whose voltage stays
-   inside the dead band (26 of 53) are unaffected.
+1. Without control, the thermal limit binds first at 89 of 113 buses on six
+   networks and the voltage limit at 24. The thermal element is the
+   transformer on the smallest feeder (rural1) and a line on the other five
+   networks, so the transformer bottleneck of Study 1 is specific to rural1.
+2. Volt-VAr acts as a gain on the voltage limit and a penalty on the thermal
+   limit; the capacity is the smaller of the two (113 of 113 buses). It never
+   raised HC where the thermal limit binds first (0 of 89; median −0.9%,
+   worst −3.6%) and raised it at 21 of 24 voltage-first buses (median
+   +17.6%, up to +31.6%).
+3. The ratio r = hc_t / hc_v from two searches without control separated the
+   cases in this sample: no gain for r < 1 (0 of 89), gain at all 19 buses
+   with r ≥ 1.05, mixed between 1.00 and 1.05. Buses inside the Volt-VAr
+   dead band at the uncontrolled capacity are unchanged (20 of 20). The
+   threshold is sample-specific.
+4. The Volt-VAr reduction at thermal-first buses is explained by measured
+   flows: the reactive power absorbed by the inverter flows through the
+   binding element (rural transformer: +6.6–14.8 kvar; urban limiting line:
+   up to 31.8 kvar) at unchanged active power, raising its current-based
+   loading above 100% at the no-control size.
+5. Snapshot capacity is a biased guide with a sign that depends on the
+   binding limit. The time-series capacity is 1.23 to 2.15 times the
+   snapshot value at line- or transformer-limited buses (1.33 at the
+   voltage-limited far bus of rural1) and 0.58 to 0.85 times at the
+   voltage-limited buses of the two larger feeders, where sizing the far bus
+   by the snapshot gave 49 to 273 hours per year above 1.05 pu.
+6. The default Volt-Watt curve is inert; a curve tuned to 1.03–1.05 pu raises
+   nameplate HC but not the delivered power in the snapshot, and over a year
+   it curtails 8% to 32% of the available energy at the sizes studied. Each
+   extra kW of nameplate delivered 61% to 79% of the average annual energy
+   per kW.
 
-Practically, when a thermal limit binds, local voltage-control curves
-should not be relied upon to increase deliverable PV capacity; the binding
-constraint should be identified first, and capacity should be reported as
-delivered power rather than nameplate only.
+Practically, the binding limit should be identified first (two searches
+without control give r), local voltage-control curves should not be relied on
+to raise capacity where a thermal limit binds, and capacity should be
+reported as delivered power and checked against time series. Volt-VAr in the
+time series, rating-limited inverters and other operating points remain to be
+studied.
 
 ## 6. Future Work
-- Time-series hosting capacity and annual energy using SimBench profiles
-  and study cases (including low-load/high-PV)
-- The same direct measurements on further feeders and operating points
-- Sensitivity of the results to a power-based transformer loading
-  criterion
-- Storage and EV flexibility to lift the transformer ceiling
-- Network-wide inverter control and rating-constrained inverters
-- Validation on additional SimBench feeders and with unbalanced
-  three-phase models
+- Volt-VAr (and Volt-Watt) over the year at the same buses, to test whether
+  the gain–penalty split and the indicator hold with profiles
+- Inverter apparent-power limit with P-priority and Q-priority
+- Other SimBench operating points (scenarios 1 and 2, study cases such as
+  low load with high PV) and the remaining buses of each network
+- Sensitivity of the results to a power-based transformer loading criterion
+- Storage and EV flexibility to lift the thermal ceiling
+- Network-wide inverter control; PV profiles with diversity between units;
+  15-minute instead of hourly energy analysis
+- Validation on unbalanced three-phase models and on non-German networks
+
+## Data and Code Availability
+SimBench networks and profiles are open data. All scripts, result files and
+documentation are in the repository
+https://github.com/safabakhsh-sattar/real-distribution-microgrid-study
+(scripts 01–10b for Study 1, 11 for Study 2a, 12, 12b for Study 2b, 13 for
+Figures 4–6).
 
 ## References
 [1] A. Alfouly, M. A. Ismeil, I. Hamdan, "A novel inverter control strategy for maximum hosting capacity photovoltaic systems in distribution networks using power factor," PLOS ONE, vol. 20, e0310301, 2025. doi:10.1371/journal.pone.0310301

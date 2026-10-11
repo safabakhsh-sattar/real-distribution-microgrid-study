@@ -3,7 +3,10 @@
 Technical record of the method used in the hosting-capacity study, including
 the decisions taken and the reasons. The paper
 ([paper-draft.md](paper-draft.md)) presents the final method; this document
-also records how it was reached.
+also records how it was reached. Sections 1 to 7 describe Study 1 (two
+feeders, snapshot); Section 8 describes Study 2a (six networks, snapshot,
+script 11) and Section 9 Study 2b (three feeders, one year of profiles,
+scripts 12 and 12b).
 
 ## 1. Networks and operating point
 
@@ -46,7 +49,7 @@ limits hold at the same time.
 
 - For each load bus, a PV generator (sgen) of size P_n is added to a deep copy of the base network.
 - **Nameplate HC** is the largest feasible P_n. **Delivered HC** is the active power actually injected at that size after any curtailment.
-- Search: binary search on P_n, tolerance 0.1 kW, upper bound 2000 kW on both feeders.
+- Search: binary search on P_n, tolerance 0.1 kW, upper bound 2000 kW on all networks.
 - Assumption: feasibility is monotonic in P_n (larger PV never restores feasibility). Fine for a radial feeder with one added injection.
 - An evaluation that raises an exception (non-convergence) counts as infeasible.
 - Electrical distance: `calc_distance_to_bus` from the transformer LV bus. It returns **path length in km**, not impedance. On the rural feeder all lines are the same cable type, so path length is proportional to path impedance and is a valid proxy.
@@ -95,6 +98,12 @@ wrong or misleading and were corrected.
 | 12 | Checked how pandapower computes transformer loading | Default is current-based, not apparent-power-based as written earlier; at 100% loading S is about 103% of rating (LV voltage about 1.03 pu) | Definition corrected in all documents; sensitivity to a power-based criterion left open |
 | 13 | Compared documented search ceiling with the scripts | Documents said 600 kW (rural); the scripts use 2000 kW. Script 10 (2000 kW) reproduces the committed rural CSV to 0.0 kW | Documents corrected to 2000 kW on both feeders |
 | 14 | Measured limiting-line current with and without Volt-VAr (script 10b, urban) | The 26 equal-capacity buses have a PV-bus voltage of at most 1.0203 pu at the no-control limit (dead band, Q about 0); at the 27 lower buses the absorbed Q (0.7–31.8 kvar) flows through the limiting line at unchanged P and its current rises | Same mechanism confirmed on the urban feeder; the 27/26 split explained |
+| 15 | Ran the six-network snapshot study (script 11, 113 buses) to test the hypothesis "Volt-VAr helps only where the voltage limit binds first" | Thermal first at 89 buses, voltage first at 24; Volt-VAr higher at 0 of 89 and 21 of 24 respectively; the thermal element is the transformer only on rural1 and a line on the other five networks | Hypothesis supported in this sample; the "shared transformer bottleneck" claim is restricted to rural1 |
+| 16 | First summary of script 11 reported a "gain" at buses where the voltage limit does not bind | There hc_v is several hundred kW or more and the Volt-VAr iteration may not converge (urban6 bus 54), so hc_v_vvar is a numerical limit | Gain reported only for voltage-first buses; `--summarize-only` added to rebuild the summary from the saved CSV; hc_vvar itself unaffected |
+| 17 | Looked for a simple indicator | r = hc_t / hc_v separates the outcomes (0 of 89 for r < 1; 19 of 19 for r >= 1.05); the threshold follows from min(hc_v (1+g), hc_t (1-p)) > hc_v, i.e. r > 1/(1-p) | Reported as sample-specific, not a general constant |
+| 18 | Time-series capacity (script 12) by a critical-step method | A full check of rural1 bus 4 at 106.6 kW found 1 violating step of 14,278: the result had been rounded up | Result rounded down (106.5 kW); full check then 0 violations |
+| 19 | Planned run time for script 12 was "about one hour" | Measured 244 min in one process (rural1 69, semiurb5 90, urban6 85 min) | Docstring corrected; `--resume` and `--workers` documented |
+| 20 | Compared snapshot and time-series capacity | The ratio is above 1 where a line or the transformer binds (1.23-2.15) and below 1 at voltage-limited far buses of semiurb5 and urban6 (0.58-0.85) | Script 12b added to show PV factor and load at the binding step; explanation stated as consistent with the data, not a formal decomposition |
 
 ## 6. Verification checks performed
 
@@ -104,19 +113,48 @@ wrong or misleading and were corrected.
 - Script 10b (urban) reproduces the no-control and Volt-VAr capacity limits of `sensitivity_urban.csv` at all 53 buses with 0.0 kW difference.
 - At 1.10 pu, Volt-VAr results equal those at 1.05 pu at every bus on both feeders. This is consistent with thermal-limited behaviour.
 - Volt-Watt default equals no control at every bus at both limits (13 of 13 rural, 53 of 53 urban), as expected when the curve is not activated.
+- Script 11 reproduces the no-control and Volt-VAr capacities of script 10 at the 13 rural buses with 0.0 kW difference.
+- Script 11: hc_nc = min(hc_v, hc_t) and hc_vvar = min(hc_v_vvar, hc_t_vvar), each within 0.2 kW, at 113 of 113 buses. At 7 buses at least one search reached the 2000 kW ceiling.
+- Script 12: for rural1 bus 4 the capacity of 106.5 kW was checked on all 14,278 daylight steps with 0 violations (the earlier rounded-up value 106.6 kW had 1). For all nine buses the capacity holds on the verification set (0 unresolved violations, none at the 2000 kW ceiling).
+- Script 12b asserts that the binding time stamps of `timeseries_hc.csv` match the profile index.
 
 ## 7. Known limitations and open items
 
-1. Single snapshot at the stored SimBench operating point; study cases and annual profiles are not evaluated.
+1. Study 1 and Study 2a are single snapshots at the stored SimBench operating point; study cases are not evaluated. Study 2b uses annual profiles on three feeders only (three buses per feeder for capacity, the far bus for energy).
 2. Existing PV is uncontrolled; network-wide control is not modelled.
 3. No inverter apparent-power limit; no P-priority or Q-priority.
 4. Balanced single-phase model; phase imbalance not modelled.
-5. Two feeders only.
+5. Study 1: two feeders. Study 2a: 113 buses of six networks (all 13 buses of rural1, 20 evenly spaced buses of each other network), scenario 0 only; the counts are sample counts, not probabilities, and the indicator was not tested on other networks.
 6. The cause of the Volt-VAr reduction was measured on both feeders. Rural (script 10): active power through the transformer unchanged, reactive power supplied to the LV network up by 6.6–14.8 kvar, loading up by 1.0–1.8 percentage points at the same PV size. Urban (script 10b): active power through the limiting line unchanged, the absorbed reactive power (up to 31.8 kvar) flows through it, and Volt-VAr is inactive at the 26 buses whose voltage stays at or near the dead band (at most 1.0203 pu).
 7. Scripts 03 to 06 use the earlier Volt-Watt implementation (damped iteration, first no-control baseline). The paper uses scripts 08 and 08b.
 8. Transformer loading is current-based; a criterion on apparent power would be stricter by about 3% at the LV voltage found at the limit. The effect on the HC values has not been evaluated.
+9. Time series (Study 2b): one weather year (2016); one fleet-average PV profile for the added unit; hourly means for energy, violation hours and losses (15-minute peaks are hidden); the capacity search is a critical-step method with a verification set, validated on the full year for one bus only; steps that already violate a limit without the added PV are excluded.
+10. Volt-VAr was not simulated in the time series; the central question is answered with snapshots.
+11. The explanation of the snapshot-to-time-series ratio (PV factor and load at the binding step) is consistent with the numbers but is not a formal decomposition.
+12. Absolute energy values depend on the SimBench PV profile (about 650-660 kWh per kW of nameplate) and should be read as relative.
 
-## 8. Reproducibility
+## 8. Study 2a: six-network snapshot (script 11)
+
+- Networks: rural1, rural2, rural3, semiurb4, semiurb5, urban6, scenario 0 (`-sw`). The base case of all six satisfies both limits (otherwise the network would be skipped and reported).
+- Buses: all 13 load buses of rural1; 20 load buses of each other network, evenly spaced by electrical distance (`calc_distance_to_bus` with impedance weight) from the transformer. 113 buses.
+- Per bus six capacities: hc_v, hc_t, hc_nc, hc_vvar, hc_v_vvar, hc_t_vvar (voltage only, thermal only, both; without control and with Volt-VAr). Search and Volt-VAr model as in Sections 3 and 4. The two Volt-VAr split searches use a warm bracket (start from the no-control value, step 1.3) to save power flows; this changes the cost, not the result.
+- Derived: first limit (voltage / thermal / both, 0.2 kW), effect (higher / equal / lower, 0.2 kW), thermal element, PV-bus voltage at hc_nc, r = hc_t / hc_v, gain (voltage-first buses only), penalty.
+- Flags: `--grids`, `--scenarios`, `--workers`, `--per-grid` (default 20), `--out`, `--resume`, `--summarize-only`.
+- Outputs: `results/multi_feeder_snapshot.csv`, `results/multi_feeder_summary.md`. Run time 57 min on a Windows PC.
+- Hypothesis (set in the script before the run): Volt-VAr helps when the voltage limit binds first and does not help, or lowers the capacity, when a thermal limit binds first.
+
+## 9. Study 2b: time series (scripts 12 and 12b)
+
+- Feeders: rural1, semiurb5, urban6 (scenario 0); three load buses each (near, middle, far by impedance distance); the far bus for energy.
+- Profiles: `simbench.get_absolute_values` (35,136 steps of 15 minutes, leap year 2016). The added PV follows f(t) = sum of the existing PV profiles / sum of their nameplates (maximum 0.576 on rural1, 0.587 on semiurb5, 0.582 on urban6). Existing PV uncontrolled. Daylight: f > 0.001.
+- Q1, capacity without control on 15-minute steps: rank daylight steps by net feeder injection plus a share of the added PV; critical set of the worst 100; bisection on the critical set; verification set of the worst 1500 and 500 random daylight steps; violators are added to the critical set and the search repeats (up to 8 rounds); result rounded down to 0.1 kW. Base-violating steps are excluded and counted. `--verify-full` checks all daylight steps.
+- Q2, energy on hourly means of daylight hours at three sizes (snapshot capacity, time-series capacity, 1.5 times the larger): available energy, delivered energy with the tuned Volt-Watt curve (1.03-1.05 pu, floor 0.2; equilibrium by bisection per hour), curtailed share, full-load hours, hours with a violated limit (counted only if not already violated without the added PV), added losses (with minus without the added PV), marginal energy per extra kW.
+- Flags (script 12): `--grids`, `--workers`, `--k-crit 100`, `--k-verify 1500`, `--k-rand 500`, `--energy-stride 1`, `--skip-energy`, `--verify-full`, `--resume`, `--out`.
+- Outputs: `results/timeseries_hc.csv`, `results/timeseries_energy.csv`, `results/timeseries_summary.md`. Run time 244 min in one process on a Windows PC (rural1 69, semiurb5 90, urban6 85 min).
+- Script 12b: `results/binding_conditions.csv` and `.md` (stored load, profile peak, load and PV factor at each binding step). About 1 minute.
+- Figures 4 to 6: script 13 (`scripts/13_figures_study2.py`).
+
+## 10. Reproducibility
 
 Script order, outputs and requirements are listed in the repository
 [README](../README.md). All results are produced from the open SimBench data
