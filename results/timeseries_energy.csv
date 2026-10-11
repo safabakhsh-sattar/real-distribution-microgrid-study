@@ -1,0 +1,10 @@
+code,bus,label,size_kW,E_avail_MWh,E_vw_MWh,curtailed_%,full_load_h_vw,volt_h_nc,therm_h_nc,volt_h_vw,therm_h_vw,dLoss_nc_kWh,dLoss_vw_kWh
+1-LV-rural1--0-sw,4,snapshot capacity,80.1,51.98,47.6,8.42,594.0,0,0,0,0,451.0,328.0
+1-LV-rural1--0-sw,4,time-series capacity,106.5,69.11,59.99,13.19,563.0,0,0,0,0,790.0,496.0
+1-LV-rural1--0-sw,4,1.5 x larger capacity,159.8,103.7,80.99,21.9,507.0,266,0,0,0,1753.0,843.0
+1-LV-semiurb5--0-sw,51,snapshot capacity,190.4,125.73,98.23,21.88,516.0,273,0,0,0,2031.0,947.0
+1-LV-semiurb5--0-sw,51,time-series capacity,110.5,72.97,64.67,11.38,585.0,0,0,0,0,698.0,449.0
+1-LV-semiurb5--0-sw,51,1.5 x larger capacity,285.6,188.6,128.42,31.91,450.0,696,0,0,0,4476.0,1521.0
+1-LV-urban6--0-sw,17,snapshot capacity,267.9,176.79,149.16,15.63,557.0,49,0,0,0,1811.0,930.0
+1-LV-urban6--0-sw,17,time-series capacity,224.7,148.28,131.06,11.62,583.0,0,0,0,0,1155.0,668.0
+1-LV-urban6--0-sw,17,1.5 x larger capacity,401.8,265.15,194.88,26.5,485.0,513,0,0,0,4686.0,1738.0
