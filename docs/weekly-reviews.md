@@ -40,7 +40,9 @@
 - Week 4 plan: see below
 - Next review: Friday, 16 Oct 2026, 8:00 PM
 
-## Week 4 (10–16 Oct 2026) - progress so far (to be completed at the review on 16 Oct)
+## Week 4 (10–16 Oct 2026)
+- Evaluation (Sattar): much better than expected
+- Load on energy and family time: light
 - Done: central question set (when does default Volt-VAr help or hurt hosting
   capacity, and can a simple indicator predict it); six-network snapshot study
   (113 buses, script 11) with a tested hypothesis (Volt-VAr never higher where
@@ -53,4 +55,8 @@
 - Weakness: Volt-VAr over the year is not tested; Sattar's own reading of the
   new paper and the oral drill of the defense questions are still ahead;
   language practice to be reviewed separately
+- Week 5 plan: Volt-VAr over the year at the same feeders, to test the
+  indicator r and the gain and penalty split with profiles; update the paper
+  with the result or the limitation. Reading, oral drill and language stay
+  with Sattar
 - Next review: Friday, 16 Oct 2026, 8:00 PM
