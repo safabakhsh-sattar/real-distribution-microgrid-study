@@ -1,0 +1,4 @@
+code,bus,z_ohm,hc_snapshot,hc_ts,ratio_ts_snapshot,binding_time,binding_f,limit,refine_rounds,verify_steps,unresolved_violations,capped,full_check_violations,full_check_steps
+1-LV-rural1--0-sw,7,0.0051,82.0,175.7,2.14,20 May 12:00,0.569,trafo,0,1855,0,False,,
+1-LV-rural1--0-sw,11,0.052,82.3,176.7,2.15,20 May 12:00,0.569,trafo,0,1855,0,False,,
+1-LV-rural1--0-sw,4,0.2453,80.1,106.5,1.33,27 Jul 12:00,0.531,voltage,0,1855,0,False,,

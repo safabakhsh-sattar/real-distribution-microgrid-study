@@ -1,0 +1,7 @@
+code,bus,z_ohm,hc_snapshot,hc_ts,ratio_ts_snapshot,binding_time,binding_f,limit,refine_rounds,verify_steps,unresolved_violations,capped,full_check_violations,full_check_steps
+1-LV-semiurb5--0-sw,74,0.0131,324.3,397.4,1.23,24 May 11:00,0.587,line,0,1849,0,False,,
+1-LV-semiurb5--0-sw,72,0.1929,290.2,246.5,0.85,24 Jul 11:00,0.57,voltage,0,1849,0,False,,
+1-LV-semiurb5--0-sw,51,0.3889,190.4,110.5,0.58,24 Jul 11:00,0.57,voltage,0,1849,0,False,,
+1-LV-urban6--0-sw,54,0.014,265.5,439.3,1.65,24 May 11:00,0.582,line,1,3692,0,False,,
+1-LV-urban6--0-sw,50,0.096,266.7,442.6,1.66,24 May 11:00,0.582,line,1,3693,0,False,,
+1-LV-urban6--0-sw,17,0.2589,267.9,224.7,0.84,24 Jul 11:00,0.567,voltage,0,1847,0,False,,
