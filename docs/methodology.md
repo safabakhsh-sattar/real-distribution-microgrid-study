@@ -20,7 +20,7 @@ Power flow: pandapower, Newton-Raphson, balanced single-phase equivalent.
 | Loads | 13 loads, 80 kW | 111 loads, 441 kW |
 | Existing PV | 4 units, 160.4 kW | 5 units, 57.1 kW |
 | Slack voltage | 1.025 pu | 1.025 pu |
-| Base-case transformer loading | 52.5% (net export 78.9 kW) | 67.7% (net import 392.2 kW) |
+| Base-case transformer loading | 52.5% (transformer export 78.9 kW at the HV side; bus balance 80.4 kW; the 1.4 kW difference is network losses) | 67.7% (transformer import 392.2 kW at the HV side; bus balance 383.9 kW; the 8.3 kW difference is network losses) |
 | Line type (rural) | all NAYY 4x150SE | not checked |
 
 Operating point: the values stored in the SimBench files (loads and existing
@@ -146,7 +146,7 @@ wrong or misleading and were corrected.
 ## 9. Study 2b: time series (scripts 12 and 12b)
 
 - Feeders: rural1, semiurb5, urban6 (scenario 0); three load buses each (near, middle, far by impedance distance); the far bus for energy.
-- Profiles: `simbench.get_absolute_values` (35,136 steps of 15 minutes, leap year 2016). The added PV follows f(t) = sum of the existing PV profiles / sum of their nameplates (maximum 0.576 on rural1, 0.587 on semiurb5, 0.582 on urban6). Existing PV uncontrolled. Daylight: f > 0.001.
+- Profiles: `simbench.get_absolute_values` (35,136 steps of 15 minutes, leap year 2016). The added PV follows f(t) = sum of the existing PV profiles / sum of their nameplates (maximum 0.576 on rural1, 0.587 on semiurb5, 0.582 on urban6). Existing PV uncontrolled.Daylight steps (f > 0.001): 14,278 on rural1, 15,035 on semiurb5 and urban6.The verification set has 1,947 to 1,955 unique steps (the 1,500 worst and 500 random steps, duplicates removed).
 - Q1, capacity without control on 15-minute steps: rank daylight steps by net feeder injection plus a share of the added PV; critical set of the worst 100; bisection on the critical set; verification set of the worst 1500 and 500 random daylight steps; violators are added to the critical set and the search repeats (up to 8 rounds); result rounded down to 0.1 kW. Base-violating steps are excluded and counted. `--verify-full` checks all daylight steps.
 - Q2, energy on hourly means of daylight hours at three sizes (snapshot capacity, time-series capacity, 1.5 times the larger): available energy, delivered energy with the tuned Volt-Watt curve (1.03-1.05 pu, floor 0.2; equilibrium by bisection per hour), curtailed share, full-load hours, hours with a violated limit (counted only if not already violated without the added PV), added losses (with minus without the added PV), marginal energy per extra kW.
 - Flags (script 12): `--grids`, `--workers`, `--k-crit 100`, `--k-verify 1500`, `--k-rand 500`, `--energy-stride 1`, `--skip-energy`, `--verify-full`, `--resume`, `--out`.

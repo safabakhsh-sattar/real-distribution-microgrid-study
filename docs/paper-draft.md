@@ -113,8 +113,8 @@ Newton-Raphson solver (Thurner et al., 2018).
 
 | Feeder | SimBench code | Transformer | Loads | Existing PV | Base trafo loading |
 |---|---|---|---|---|---|
-| Rural | `1-LV-rural1--0-sw` | 160 kVA | 13 loads, 80 kW | 4 units, 160.4 kW | 52.5% (net export 78.9 kW) |
-| Urban | `1-LV-urban6--0-sw` | 630 kVA | 111 loads at 53 load buses, 441 kW | 5 units, 57.1 kW | 67.7% (net import 392.2 kW) |
+| Rural | 1-LV-rural1--0-sw | 160 kVA | 13 loads, 80 kW | 4 units, 160.4 kW | 52.5% (transformer export 78.9 kW at the HV side; bus balance 80.4 kW; the 1.4 kW difference is network losses) |
+| Urban | 1-LV-urban6--0-sw | 630 kVA | 111 loads at 53 load buses, 441 kW | 5 units, 57.1 kW | 67.7% (transformer import 392.2 kW at the HV side; bus balance 383.9 kW; the 8.3 kW difference is network losses) |
 
 All values are those stored in the SimBench network files (the slack
 voltage is 1.025 pu). In Sections 3.1–3.7 the analysis is a single
