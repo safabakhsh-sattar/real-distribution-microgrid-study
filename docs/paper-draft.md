@@ -29,7 +29,7 @@ snapshot gave 49 to 273 hours per year above 1.05 pu. A Volt-Watt curve
 tuned to 1.03–1.05 pu removed all hourly violations in the cases studied but curtailed 8 to 32%
 of the available energy at the sizes studied, and each extra kW of
 nameplate yielded only 61 to 79% of the average annual energy per kW.
-Volt-VAr itself was not simulated over time. The binding limit should be
+Over one year at the far bus, Volt-VAr removed almost all voltage-violation hours at the snapshot sizes (one exception at 1.5 times the snapshot size) and raised the added losses by 16% to 29%; it was not tested at other buses. The binding limit should be
 identified before an inverter control is chosen, and capacity should be
 reported as delivered power and checked against time series.
 
@@ -305,7 +305,7 @@ Three networks are used: rural1, semiurb5 and urban6 (scenario 0), with three
 load buses each (near, middle and far along the electrical distance from the
 transformer; nine buses). The control is no control in the capacity search
 (Q1) and the tuned Volt-Watt curve (1.03–1.05 pu, floor 0.2) in the energy
-analysis (Q2). Volt-VAr is not simulated over time.
+analysis (Q2). Volt-VAr is simulated over time only at the far bus (Section 3.9).
 
 **Profiles.** SimBench absolute values for the same network (35,136
 15-minute steps of the leap year 2016): load active and reactive power and
@@ -778,6 +778,28 @@ The available energy is about 650–660 kWh per kW of nameplate in all nine
 cases; this is a property of the SimBench PV profile, so the absolute energy
 values should be read as relative figures.
 
+### 3.9 Volt-VAr over One Year at the Far Bus (Script 14)
+
+To test the Volt-VAr case over time, the default IEEE 1547 curve was applied to the added unit at the far bus of each feeder, over the same weather year as Section 3.8, with hourly means (8,784 hours per case). Table 14 gives the hours with the bus voltage above 1.05 pu, without control and with Volt-VAr, at the snapshot size, the time-series size and 1.5 times the snapshot size. No thermal violation occurred in any case.
+
+**Table 14.** Hours above 1.05 pu at the far bus, with and without Volt-VAr (hourly, one year).
+
+| Feeder (far bus) | Case | Size (kW) | Hours above 1.05 pu, no control | Hours above 1.05 pu, Volt-VAr |
+|---|---|---|---|---|
+| rural1 (bus 4) | Snapshot | 80.1 | 0 | 0 |
+| rural1 (bus 4) | Time series | 106.5 | 0 | 0 |
+| rural1 (bus 4) | 1.5 x snapshot | 159.8 | 266 | 0 |
+| semiurb5 (bus 51) | Snapshot | 190.4 | 273 | 3 |
+| semiurb5 (bus 51) | Time series | 110.5 | 0 | 0 |
+| semiurb5 (bus 51) | 1.5 x snapshot | 285.6 | 696 | 118 |
+| urban6 (bus 17) | Snapshot | 267.9 | 49 | 0 |
+| urban6 (bus 17) | Time series | 224.7 | 0 | 0 |
+| urban6 (bus 17) | 1.5 x snapshot | 401.8 | 513 | 0 |
+
+Volt-VAr removed almost all voltage-violation hours at the snapshot sizes (273 to 3 hours at semiurb5, 49 to 0 at urban6, and 0 at rural1) and at 1.5 times the snapshot size of rural1 and urban6 (266 to 0 and 513 to 0 hours). The exception is semiurb5 at 1.5 times the snapshot size, which keeps 118 hours above 1.05 pu. The added losses were 16% to 29% higher with Volt-VAr than without it in all nine cases. The capacities of Section 3.8 were computed without control and were not recalculated with Volt-VAr.
+
+The test covers one bus per feeder and one weather year. It does not test the screening indicator r, which needs the same comparison at the other buses. It also does not test the thermal side of the gain–penalty split, because the far buses were voltage-limited in every case.
+
 ## 4. Discussion
 
 **The binding limit decides whether Volt-VAr helps.** Volt-VAr acts on voltage
@@ -903,9 +925,10 @@ power-flow studies.
    verification set, not an exhaustive check of every step (validated on the
    full year for one bus). Steps that violate a limit without the added PV
    are excluded.
-7. Volt-VAr was not simulated in the time series. The central question is
-   therefore answered with snapshots; whether the indicator and the gain–
-   penalty split hold over a year is untested.
+7. Volt-VAr was simulated over one year only at the far bus of each feeder
+   (Section 3.9), with hourly means. Whether the gain–penalty split and the
+   screening indicator r hold over a year at the other buses, and whether a
+   thermal penalty appears over a year, remain untested.
 8. The 1.05 pu limit is a planning assumption; 1.10 pu was evaluated as a
    sensitivity case on two feeders only.
 9. The transformer loading is current-based (pandapower default). At the LV
@@ -959,11 +982,12 @@ without control give r), local voltage-control curves should not be relied on
 to raise capacity where a thermal limit binds, and capacity should be
 reported as delivered power and checked against time series. Volt-VAr in the
 time series, rating-limited inverters and other operating points remain to be
-studied.
+studied. Volt-VAr over the year was tested at the far bus only (Section 3.9).
 
 ## 6. Future Work
-- Volt-VAr (and Volt-Watt) over the year at the same buses, to test whether
-  the gain–penalty split and the indicator hold with profiles
+- Volt-VAr (and Volt-Watt) over the year at all studied buses, not only the
+  far bus, to test whether the gain–penalty split and the indicator hold with
+  profiles
 - Inverter apparent-power limit with P-priority and Q-priority
 - Other SimBench operating points (scenarios 1 and 2, study cases such as
   low load with high PV) and the remaining buses of each network
