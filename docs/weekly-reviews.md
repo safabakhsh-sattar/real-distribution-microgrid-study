@@ -59,13 +59,13 @@
   indicator r and the gain and penalty split with profiles; update the paper
   with the result or the limitation. Reading, oral drill and language stay
   with Sattar
-- Next review: Friday, 23 Oct 2026, 8:00 PM 
+- Next review: Friday, 23 Oct 2026, 8:00 PM
 
 ## Week 5 review (17–23 Oct 2026)
-
-- Done: rural1 energy check (matches Table 12, bus 4); two methodology lines added; check_* files removed; Section 2.1 net-flow labels corrected; Section 2.7 answers written.
-- Script 14 (Volt-VAr, far bus, hourly, 8,784 h per case) ran on all three feeders with 0 failed power flows. Runtime: rural1 70 min, semiurb5 106 min, urban6 141 min.
-- Volt-VAr removes almost all voltage-violation hours at snapshot and 1.5x capacity. Exception: semiurb5 at 1.5x (285.6 kW) still has 118 h above 1.05 pu.
-- Volt-VAr increases losses in all cases. No thermal violations.
-- Open: quarter-hour run (--step quarter) not done. Confirm that the r-indicator test moves to week 6.
-Next review: Friday, 30 Oct 2026, 8:00 PM
+- Evaluation (Sattar): [to fill]
+- Load on energy and family time: [to fill]
+- Done: rural1 energy check (matches Table 12, bus 4); two methodology lines added; check_* files removed; Section 2.1 net-flow labels corrected; Section 2.7 answers drafted; script 14 (Volt-VAr over the year, hourly, 8,784 h per case) ran on all three feeders with 0 failed power flows (runtime: rural1 70 min, semiurb5 106 min, urban6 141 min)
+- Result: Volt-VAr removes almost all voltage-violation hours at snapshot and 1.5x capacity. Exception: semiurb5 at 1.5x (285.6 kW) still has 118 h above 1.05 pu. No thermal violations. Volt-VAr increases losses in all cases.
+- Weakness: indicator r not yet tested on the annual results; paper not yet updated with the annual result; quarter-hour run not done
+- Week 6 plan: test indicator r on the annual results; update the paper with the annual result or its limitation (semiurb5 at 1.5x); quarter-hour run (optional); reading, oral drill and language stay with Sattar
+- Next review: Friday, 30 Oct 2026, 8:00 PM
