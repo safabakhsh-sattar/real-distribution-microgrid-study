@@ -20,7 +20,7 @@ voltage-only HC without control, which needs two searches without control,
 separated the snapshot cases in this sample: Volt-VAr never helped for r < 1 (0 of
 89) and helped at all 19 buses with r ≥ 1.05. Buses whose voltage stayed
 in the dead band (≤ 1.02 pu) at the uncontrolled limit were unchanged
-(20 of 20). One year of 15-minute SimBench profiles on three feeders (nine
+(20 of 20). On two further scenarios of the same six networks (180 buses, predictions fixed in advance), the same rules held: no gain for r < 1 (0 of 151), gain at all 24 buses with r ≥ 1.05, and no change in the dead band (61 of 61). One year of 15-minute SimBench profiles on three feeders (nine
 buses) shows that snapshot HC is a biased guide whose sign depends on the
 binding limit: where a line or the transformer binds, time-series HC is
 1.23 to 2.15 times the snapshot value; at the voltage-limited buses of the
@@ -87,7 +87,7 @@ contributions are:
 3. A screening indicator, r = HC(thermal only) / HC(voltage only) without
    control, that needs two searches without control and separated the snapshot
    cases in this sample (0 of 89 helped for r < 1, 19 of 19 helped for
-   r ≥ 1.05), together with a dead-band check (20 of 20 unchanged). Over a year at the far buses the snapshot sign was wrong at two of three buses (Section 3.9).
+   r ≥ 1.05), together with a dead-band check (20 of 20 unchanged). The rules held on a held-out test of two other scenarios of the same networks (Section 3.7.8). Over a year at the far buses the snapshot sign was wrong at two of three buses (Section 3.9).
 4. Evidence that the bias of a snapshot capacity relative to a time-series
    capacity has a sign that depends on the binding limit, and that sizing
    by the snapshot can violate the voltage limit for tens to hundreds of
@@ -303,6 +303,8 @@ large (several hundred kW or more) and the Volt-VAr iteration may fail to
 converge, so hc_v_vvar there is a numerical limit and not a physical one.
 The gain is therefore reported only for buses where the voltage limit binds
 first.
+
+**Held-out test (script 18).** The rules were then tested on operating points that were not used to derive them. SimBench 1-LV contains only the six networks above, so the test uses scenarios 1 and 2 of the same six networks (Section 3.7.8). The predictions were written on 21 October 2026, before the run. The same functions and thresholds were used, without refitting: P1, with r < 1 Volt-VAr is never higher than no control; P2, with r ≥ 1.05 Volt-VAr is higher at every bus where the voltage limit binds first; P3, where the voltage at the uncontrolled capacity is at most 1.02 pu Volt-VAr is unchanged; P4, hc_nc and hc_vvar equal the smaller of their two parts within 0.2 kW at every bus. The 1.00–1.05 band was expected to be mixed. An earlier design with five other networks was dropped before any run, because those grids do not exist in SimBench 1-LV.
 
 ### 2.7 Time-Series Study (Scripts 12 and 12b)
 Three networks are used: rural1, semiurb5 and urban6 (scenario 0), with three
@@ -656,6 +658,12 @@ the Volt-VAr iteration may fail to converge at PV sizes of roughly
 600–1000 kW (for example at urban6 bus 54), which is why the gain is
 reported only for voltage-first buses (Section 2.6).
 
+**3.7.8 Held-out operating points (Script 18).** The rules were tested on scenarios 1 and 2 of the six networks, with the predictions P1 to P4 of Section 2.6. Three of the twelve cases were excluded because their base case already violates a limit: rural1 in both scenarios (existing PV of 468 kW against a load of 82 kW or 181 kW; transformer loading 316% in scenario 1) and semiurb4 in scenario 2 (line loading 117%). The nine remaining cases (rural2, rural3, semiurb5 and urban6 in both scenarios, and semiurb4 in scenario 1) give 180 buses, each searched as in Section 2.3.
+
+Without control, the thermal limit binds first at 151 buses and the voltage limit at 29. Grouped by r, Volt-VAr gave: below 1, no bus higher, 67 equal and 84 lower (median −0.25%, worst −4.41%); 1.00–1.05, 3 higher and 2 lower of 5; 1.05–1.10, 3 of 3 higher (median +2.75%); 1.10–1.25, 8 of 8 higher (median +10.9%); 1.25–1.50, 8 of 8 higher (+20.5%); 1.50 or more, 5 of 5 higher (+20.7%). Each prediction held. P1: no bus with r < 1 gained (0 of 151). P2: 24 of 24 buses with r ≥ 1.05 gained, and the 29 voltage-first buses were 27 higher and 2 lower, both of the lower buses in the 1.00–1.05 band. P3: 61 of 61 buses inside the dead band were unchanged. P4: hc_nc and hc_vvar equal the smaller of their two parts at 180 of 180 buses. Fourteen buses reached the 2000 kW ceiling, so for them r is only a bound.
+
+The test is out of sample in operating points only. The networks, the bus rule and the thresholds are those of the training sample, thermal-first buses dominate (151 of 180), and only 24 buses reach r ≥ 1.05. It therefore supports the rules for new operating points of these networks. It does not show that they hold on other networks.
+
 ### 3.8 Snapshot versus Time Series (Scripts 12 and 12b)
 
 **3.8.1 Capacity over a year.** For nine buses the capacity found with one
@@ -847,7 +855,7 @@ penalty on the thermal limit at that bus. The value of 1.05 describes the
 penalties observed here (median 0.9–2.9% per network, maximum 11.6% at one
 bus) and is not a general constant; a bus with a large penalty and r just
 above 1.05 could still lose. The indicator was derived and tested on the same
-113 buses and has not been tested on other networks. The dead-band check is a
+113 buses. On two further scenarios of the same six networks (180 buses, Section 3.7.8) the rules held, but the indicator has not been tested on other networks. The dead-band check is a
 second, even simpler screen: at the 20 buses whose voltage stayed at or below
 1.02 pu at the uncontrolled capacity, Volt-VAr changed nothing. Over a year the indicator did not hold at the far buses: it gave no gain for urban6 (r = 0.885), where the year gain was 74%, and the snapshot sign was wrong at rural1 as well (Section 3.9). The indicator describes the snapshot, and year-based use needs a year check at each bus.
 
@@ -930,7 +938,8 @@ power-flow studies.
 2. The sample of Study 2a is 113 buses of six German SimBench networks
    (scenario 0): all buses of rural1 and 20 evenly spaced buses of each other
    network. The counts (0 of 89, 19 of 19, 20 of 20) are counts in this
-   sample, not probabilities, and the indicator was not tested on other
+   sample, not probabilities. The held-out test (Section 3.7.8) used two other
+   scenarios of the same networks; the indicator was not tested on other
    networks.
 3. The existing PV units are uncontrolled, and only the added unit applies
    Volt-VAr or Volt-Watt. Network-wide control could change the outcome.
@@ -980,7 +989,7 @@ main findings are:
    +17.6%, up to +31.6%).
 3. In the snapshot, the ratio r = hc_t / hc_v from two searches without control separated the
    cases in this sample: no gain for r < 1 (0 of 89), gain at all 19 buses
-   with r ≥ 1.05, mixed between 1.00 and 1.05. Buses inside the Volt-VAr
+   with r ≥ 1.05, mixed between 1.00 and 1.05. On two further scenarios of the same networks (180 buses, predictions fixed in advance) the same rules held: no gain for r < 1 (0 of 151), gain at all 24 buses with r ≥ 1.05. Buses inside the Volt-VAr
    dead band at the uncontrolled capacity are unchanged (20 of 20). The
    threshold is sample-specific. Over a year at the far buses the snapshot sign was wrong at two of three buses (Section 3.9).
 4. The Volt-VAr reduction at thermal-first buses is explained by measured
@@ -1017,8 +1026,9 @@ studied. Volt-VAr over the year was tested at the far buses only (Section 3.9).
   profiles
 - Snapshot study cases with PV at the profile peak (about 0.58 of the stored value), to test whether a snapshot can reproduce the year's sign
 - Inverter apparent-power limit with P-priority and Q-priority
-- Other SimBench operating points (scenarios 1 and 2, study cases such as
-  low load with high PV) and the remaining buses of each network
+- Other SimBench study cases (for example low load with high PV), the remaining
+  buses of each network, and networks beyond the six used here (SimBench 1-LV
+  has no further grids)
 - Sensitivity of the results to a power-based transformer loading criterion
 - Storage and EV flexibility to lift the thermal ceiling
 - Network-wide inverter control; PV profiles with diversity between units;
@@ -1029,7 +1039,7 @@ studied. Volt-VAr over the year was tested at the far buses only (Section 3.9).
 SimBench networks and profiles are open data. All scripts, result files and
 documentation are in the repository
 https://github.com/safabakhsh-sattar/real-distribution-microgrid-study
-(scripts 01–10b for Study 1, 11 for Study 2a, 12, 12b for Study 2b, 13 for
+(scripts 01–10b for Study 1, 11 for Study 2a, 18 for the held-out test of Section 3.7.8, 12, 12b for Study 2b, 13 for
 Figures 4–6, 14 and 15 for Volt-VAr over the year, 16 and 17 for the checks of Section 3.9).
 
 ## References
