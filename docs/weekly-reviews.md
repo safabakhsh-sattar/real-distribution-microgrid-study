@@ -69,3 +69,30 @@
 - Weakness: indicator r not yet tested on the annual results; paper not yet updated with the annual result; quarter-hour run not done
 - Week 6 plan: test indicator r on the annual results; update the paper with the annual result or its limitation (semiurb5 at 1.5x); quarter-hour run (optional); reading, oral drill and language stay with Sattar
 - Next review: Friday, 30 Oct 2026, 8:00 PM
+
+## Week 6
+
+Goal: Volt-VAr over the year at the far buses (time-series capacity), checked against the snapshot indicator r.
+
+Done:
+- Script 15 (Volt-VAr time-series capacity, far buses): rural1 106.5 -> 165.1 kW (+55.0%), semiurb5 110.5 -> 174.1 kW (+57.6%), urban6 224.7 -> 390.8 kW (+73.9%). Every daylight step verified, 0 unresolved violations, 0 non-converged power flows at or below capacity.
+- Script 16: the Volt-VAr code reproduces the script 11 snapshot values at all three buses (match: True).
+- Script 17: the year's highest PV is 58% of the snapshot PV at all three feeders, and the stored loads are 1.08 to 2.37 times the year's peak load.
+- Script 14 losses checked against results/vvar_annual_hour_summary.md: Volt-VAr adds 16.2% to 29.0% losses in all nine cases.
+- Paper updated (abstract, contributions, Sections 2.7, 3.9, discussion, limitations, conclusion), committed and pushed.
+
+Finding:
+- The snapshot indicator r did not predict the year-based sign at two of three far buses: urban6 (r = 0.885, no gain expected) gained 73.9% over the year, and rural1 (snapshot effect -1.5%) gained 55.0%. The indicator holds for the snapshot only.
+
+Decision:
+- The snapshot result stays in the paper as the main result. The year result is reported as a limitation of the indicator.
+
+Weakness:
+- Year-based Volt-VAr was run only at the far bus of each feeder, not at the other buses.
+- The snapshot-to-year explanation (PV peaks at about 58% of nameplate) fits the data but is not a formal decomposition.
+
+Week 7 plan: close the project checklist. Make README, methodology, progress log and weekly reviews consistent with the paper, check table and figure numbers, and commit everything.
+
+Week 8 plan: build the defense sheet from the final paper.
+
+Next review: Friday 6 Nov 2026, 20:00.
