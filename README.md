@@ -49,6 +49,7 @@ above 100%. Urban buses whose voltage stays in the Volt-VAr dead band
 - In the snapshot, where the thermal limit binds first, Volt-VAr never raised capacity (0 of 89; median -0.9%, worst -3.6%). Where the voltage limit binds first it raised capacity at 21 of 24 buses (median +17.6%, up to +31.6%).
 - Snapshot screening indicator r = hc_t / hc_v from two searches without control: no gain for r < 1 (0 of 89), gain at all 19 buses with r >= 1.05, mixed between 1.00 and 1.05. The threshold is specific to this sample.
 - Buses inside the Volt-VAr dead band at the uncontrolled capacity (<= 1.02 pu) are unchanged (20 of 20).
+- Held-out test (script 18): on scenarios 1 and 2 of the same six networks (180 buses, nine cases, predictions written before the run) the rules held: no gain for r < 1 (0 of 151), gain at all 24 buses with r >= 1.05, dead band unchanged (61 of 61). These are new operating points, not new networks; SimBench 1-LV has no further grids.
 
 ### Study 2b: one year of profiles, three feeders (scripts 12, 12b)
 
@@ -135,6 +136,7 @@ Run from the repository root.
 | 19 | `scripts/15_vvar_timeseries_hc.py` | Volt-VAr time-series capacity at the far buses, 15-minute steps, all daylight steps verified (about 7 h in one process; `--workers`, `--sampled` for a quick test) | `vvar_timeseries_hc.csv`, `vvar_timeseries_summary.md` |
 | 20 | `scripts/16_vvar_snapshot_check.py` | Checks the Volt-VAr code against the script 11 snapshot values (a few minutes) | `snapshot_vvar_check.csv` |
 | 21 | `scripts/17_snapshot_condition.py` | Compares the year's PV and load with the stored operating point (no power flow) | `snapshot_condition.csv` |
+| 22 | `scripts/18_heldout_indicator.py` | Held-out test of r: scenarios 1 and 2 of the six 1-LV networks, 180 buses in nine cases (about 30 min with `--workers 3`) | `heldout_summary.md`, `heldout_snapshot.csv` |
 
 `scripts/03b_diagnostic_transformer_check.py` is the diagnostic that revealed
 the transformer bottleneck. Scripts 03 to 06 are earlier steps whose
@@ -152,8 +154,8 @@ docs/       Paper draft, methodology, progress log, weekly reviews
 
 ## Limitations
 
-- Studies 1 and 2a are single snapshots; SimBench study cases (scenarios 1 and 2) are not evaluated
-- Study 2a: 113 buses of six networks (all buses of rural1, 20 evenly spaced buses of each other network); counts are sample counts, and the indicator threshold is sample-specific
+- Studies 1 and 2a are single snapshots; scenarios 1 and 2 of the six networks were used only for the held-out test (script 18), and other SimBench study cases are not evaluated
+- Study 2a: 113 buses of six networks (all buses of rural1, 20 evenly spaced buses of each other network); counts are sample counts, the indicator threshold is sample-specific, and the held-out test used other operating points of the same networks, not other networks
 - Study 2b: three feeders, three buses per feeder, one weather year, one fleet-average PV profile; energy, violation hours and losses use hourly means; the capacity search is a critical-step method with a verification set
 - Volt-VAr over the year was simulated at the far bus of each feeder only; the indicator was not tested over the year at other buses
 - Existing PV units are uncontrolled; only the added unit applies Volt-VAr or Volt-Watt
@@ -172,5 +174,5 @@ region.
 
 Next steps:
 - Volt-VAr over the year at the near and middle buses of each feeder, to test the indicator with profiles
-- Inverter apparent-power limit (P-priority and Q-priority); other SimBench operating points
+- Inverter apparent-power limit (P-priority and Q-priority); other SimBench study cases; a held-out test on networks other than the six used here (for example LV subnets of the SimBench MV grids)
 - Storage and EV flexibility to lift the thermal ceiling

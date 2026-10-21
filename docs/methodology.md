@@ -108,6 +108,7 @@ wrong or misleading and were corrected.
 | 22 | Volt-VAr capacity over the year at the far buses (script 15, 15-minute steps) | Capacity rose with Volt-VAr at all three far buses: 106.5 to 165.1 kW (rural1), 110.5 to 174.1 kW (semiurb5), 224.7 to 390.8 kW (urban6); the snapshot had predicted a penalty at rural1 and urban6 | Reported as the year result; the snapshot indicator r is not carried over to the year without a year check |
 | 23 | Checked whether the Volt-VAr code gives the snapshot values (script 16) | Reproduces the script 11 values at the three far buses (match: True) | The code is not the cause; the difference comes from the operating point |
 | 24 | Compared the stored operating point with the year (script 17) | Highest year PV is 57.6% to 58.6% of the snapshot PV at the three feeders; no quarter hour reaches 90% of it; stored loads are 1.08 to 2.37 times the year's peak | Explanation stated as consistent with the data, not a formal decomposition |
+| 25 | Held-out test of r (script 18): scenarios 1 and 2 of the six 1-LV networks, 180 buses in nine cases (three cases skipped, base case violates a limit) | Predictions P1 to P4, written before the run, all held: 0 of 151 thermal-first buses higher; 24 of 24 buses with r >= 1.05 higher; 61 of 61 dead-band buses unchanged; hc_nc and hc_vvar equal the smaller of their parts at 180 of 180 buses | Recorded as an out-of-sample test of operating points, not of networks. A first design with five other networks was dropped before any run, because those grids do not exist in SimBench 1-LV |
 
 ## 6. Verification checks performed
 
@@ -124,14 +125,15 @@ wrong or misleading and were corrected.
 - Script 14 (hourly, far buses): 0 failed power flows at rural1, semiurb5 and urban6.
 - Script 15: verify_steps counts the daylight steps that are not in the critical set (14,178 of 14,278 at rural1; 14,935 of 15,035 at semiurb5 and urban6). The 100 critical steps are checked by the bisection, so every daylight step is covered. No unresolved violations, and no non-converged power flow at or below the final capacity.
 - Script 16 reproduces the script 11 no-control and Volt-VAr capacities at the three far buses (match: True).
+- Script 18 (held-out, scenarios 1 and 2): hc_nc and hc_vvar equal the smaller of their parts within 0.2 kW at 180 of 180 buses. Three of twelve cases are skipped because the base case violates a limit (see Section 8).
 
 ## 7. Known limitations and open items
 
-1. Study 1 and Study 2a are single snapshots at the stored SimBench operating point; study cases are not evaluated. Study 2b uses annual profiles on three feeders only (three buses per feeder for capacity, the far bus for energy and for Volt-VAr over the year).
+1. Study 1 and Study 2a are single snapshots at the stored SimBench operating point; study cases are not evaluated, except scenarios 1 and 2 in the held-out test (script 18). Study 2b uses annual profiles on three feeders only (three buses per feeder for capacity, the far bus for energy and for Volt-VAr over the year).
 2. Existing PV is uncontrolled; network-wide control is not modelled.
 3. No inverter apparent-power limit; no P-priority or Q-priority.
 4. Balanced single-phase model; phase imbalance not modelled.
-5. Study 1: two feeders. Study 2a: 113 buses of six networks (all 13 buses of rural1, 20 evenly spaced buses of each other network), scenario 0 only; the counts are sample counts, not probabilities, and the indicator was not tested on other networks.
+5. Study 1: two feeders. Study 2a: 113 buses of six networks (all 13 buses of rural1, 20 evenly spaced buses of each other network), scenario 0 only in the snapshot study; scenarios 1 and 2 of the same networks were used only for the held-out test (script 18, nine cases, 180 buses); the counts are sample counts, not probabilities, and the indicator was not tested on other networks.
 6. The cause of the Volt-VAr reduction was measured on both feeders. Rural (script 10): active power through the transformer unchanged, reactive power supplied to the LV network up by 6.6–14.8 kvar, loading up by 1.0–1.8 percentage points at the same PV size. Urban (script 10b): active power through the limiting line unchanged, the absorbed reactive power (up to 31.8 kvar) flows through it, and Volt-VAr is inactive at the 26 buses whose voltage stays at or near the dead band (at most 1.0203 pu).
 7. Scripts 03 to 06 use the earlier Volt-Watt implementation (damped iteration, first no-control baseline). The paper uses scripts 08 and 08b.
 8. Transformer loading is current-based; a criterion on apparent power would be stricter by about 3% at the LV voltage found at the limit. The effect on the HC values has not been evaluated.
@@ -149,6 +151,9 @@ wrong or misleading and were corrected.
 - Flags: `--grids`, `--scenarios`, `--workers`, `--per-grid` (default 20), `--out`, `--resume`, `--summarize-only`.
 - Outputs: `results/multi_feeder_snapshot.csv`, `results/multi_feeder_summary.md`. Run time 57 min on a Windows PC.
 - Hypothesis (set in the script before the run): Volt-VAr helps when the voltage limit binds first and does not help, or lowers the capacity, when a thermal limit binds first.
+- Held-out test (script 18, `scripts/18_heldout_indicator.py`): calls script 11 with the six 1-LV networks and scenarios 1 and 2. No network is new, because SimBench 1-LV has no other grids. Predictions P1 to P4 were written on 21 Oct 2026 before the run, and nothing was refitted. Three of the twelve cases were skipped because their base case violates a limit (rural1 in scenarios 1 and 2, semiurb4 in scenario 2). Nine cases, 180 buses. Outputs: `results/heldout_summary.md`, `results/heldout_snapshot.csv`. Run time 31.4 min with three workers.
+- Held-out results: thermal first (r < 1), 151 buses: 0 higher, 67 equal, 84 lower (median -0.25%, worst -4.41%). Voltage first, 29 buses: 27 higher, 2 lower, both lower buses in the 1.00 to 1.05 band. r >= 1.05: 24 of 24 higher. r from 1.00 to 1.05: 3 higher, 2 lower of 5. Dead band: 61 of 61 unchanged. hc_nc and hc_vvar equal the smaller of their parts at 180 of 180 buses. Fourteen buses reached the 2000 kW ceiling, so their r is only a bound.
+- Interpretation: the rules held on new operating points of the same networks. This is not an independent test on other networks, because the networks, the bus rule and the thresholds are those of the training sample.
 
 ## 9. Study 2b: time series (scripts 12 and 12b)
 
