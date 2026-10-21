@@ -569,8 +569,7 @@ of rural1 and a line at all 100 buses of the other five networks. The
 transformer bottleneck of Section 3.2 is therefore specific to the smallest
 feeder, which carries 160.4 kW of existing PV on a 160 kVA transformer; in
 the other networks a line limits capacity and HC varies from bus to bus.
-Voltage-first buses are concentrated in rural2 (9 of 20) and rural3 (8 of 20),
-17 of the 24, and absent in urban6.
+Voltage-first buses are concentrated in rural2 (9 of 20) and rural3 (8 of 20), which together hold 17 of the 24. There are none in urban6.
 
 **Table 6.** Limit that binds first without control, and thermal element.
 
@@ -824,7 +823,7 @@ Volt-VAr removed almost all voltage-violation hours at the snapshot sizes (273 t
 
 Over one year the capacity rose with Volt-VAr at all three far buses, by 55% to 74%. The snapshot predicted a small penalty at rural1 and urban6, so its sign was wrong over the year at two of the three buses. The screening rule gave "no gain expected" for urban6 (r = 0.885), which did not hold, and "mixed band" for rural1 (r = 1.037). Only at semiurb5 (r = 1.240, "gain expected") did the snapshot and the year agree.
 
-**Checks of the result.** Script 16 repeats the snapshot search on the stored operating point of each feeder and reproduces the script 11 values, without control and with Volt-VAr, at all three far buses. The code therefore agrees with the snapshot study, and the difference comes from the operating point. Script 17 compares that point with the one-year profiles. The stored study case has the existing PV at full output, while the year never exceeds 58% of it at any of the three feeders (57.6%, 58.6% and 58.3%), and no quarter hour reaches 90% of it. The stored loads are also 1.08 to 2.37 times the largest load of the year (Table 11). The snapshot penalty at rural1 and urban6 is a thermal limit reached at full PV output, a state the year does not reach. This explanation is consistent with the numbers but is not a formal decomposition.
+**Checks of the result.** Script 16 repeats the snapshot search on the stored operating point of each feeder and reproduces the script 11 values, without control and with Volt-VAr, at all three far buses. The code therefore agrees with the snapshot study, and the difference comes from the operating point. Script 17 compares that point with the one-year profiles. The stored study case has the existing PV at full output, while the year never exceeds 58% of it at any of the three feeders (57.6%, 58.6% and 58.3%), and no quarter hour reaches 90% of it. The stored loads are also 1.08 to 2.37 times the largest load of the year (Table 11). The snapshot penalty at rural1 and urban6 is a thermal limit reached at full PV output, a state the year does not reach (Section 3.8.2).
 
 At the Volt-VAr capacities every daylight step was verified: the bisection checks the 100 critical steps, and the verification set covers the rest (14,178 steps at rural1 and 14,935 at semiurb5 and urban6), with no unresolved violation. Seven searched power flows did not converge (2, 2 and 3 at the three feeders); all were at sizes above the final capacity of their feeder.
 
@@ -1017,8 +1016,7 @@ Practically, the binding limit should be identified first (two searches
 without control give r), local voltage-control curves should not be relied on
 to raise snapshot capacity where a thermal limit binds. Over a year Volt-VAr raised capacity at rural1 and urban6 (Section 3.9), so a year-based check should come before a control is chosen, and capacity should be
 reported as delivered power and checked against time series. Volt-VAr over all buses and over the year, rating-limited inverters and other
-operating points remain to be
-studied. Volt-VAr over the year was tested at the far buses only (Section 3.9).
+operating points remain to be studied.
 
 ## 6. Future Work
 - Volt-VAr (and Volt-Watt) over the year at all studied buses, not only the
@@ -1045,14 +1043,14 @@ Figures 4–6, 14 and 15 for Volt-VAr over the year, 16 and 17 for the checks of
 ## References
 [1] A. Alfouly, M. A. Ismeil, I. Hamdan, "A novel inverter control strategy for maximum hosting capacity photovoltaic systems in distribution networks using power factor," PLOS ONE, vol. 20, e0310301, 2025. doi:10.1371/journal.pone.0310301
 [2] D. Chathurangi, U. Jayatunga, S. Perera, A. P. Agalgaonkar, T. Siyambalapitiya, "Comparative evaluation of solar PV hosting capacity enhancement using Volt-VAr and Volt-Watt control strategies," Renewable Energy, vol. 177, pp. 1063-1075, 2021. doi:10.1016/j.renene.2021.06.037
-[3] A. Ame-Oko, O. Lavrova, "Mitigation of limitation imposed on hosting
+[3] A. Ame-Oko and O. Lavrova, "Mitigation of limitation imposed on hosting
     capacity in low voltage networks by their distribution transformer
     loading and degradation considerations," IET Energy Systems
-    Integration, 2024. doi:10.1049/esi2.12143
+    Integration, vol. 6, no. 4, pp. 465–478, 2024. doi:10.1049/esi2.12143
 [4] N. Qamar, A. Arshad, K. Mahmoud, M. Lehtonen, "Hosting capacity in
     distribution grids: A review of definitions, performance indices,
     determination methodologies, and enhancement techniques," Energy
-    Science & Engineering, 2023. doi:10.1002/ese3.1389
+    Science & Engineering, vol. 11, no. 4, pp. 1536–1559, 2023. doi:10.1002/ese3.1389
 [5] R. Dissanayake, A. Wijethunge, J. Wijayakulasooriya, J. Ekanayake,
     "Optimizing PV-Hosting Capacity with the Integrated Employment of
     Dynamic Line Rating and Voltage Regulation," Energies, vol. 15,
