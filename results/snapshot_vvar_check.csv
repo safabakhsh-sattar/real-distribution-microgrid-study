@@ -1,0 +1,4 @@
+code,bus,hc_nc_recomputed,hc_nc_script11,hc_vvar_recomputed,hc_vvar_script11,match
+1-LV-rural1--0-sw,4,80.1,80.1,78.9,78.9,True
+1-LV-semiurb5--0-sw,51,190.4,190.4,226.1,226.1,True
+1-LV-urban6--0-sw,17,267.9,267.9,263.8,263.8,True

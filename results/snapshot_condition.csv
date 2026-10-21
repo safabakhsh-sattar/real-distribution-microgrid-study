@@ -1,0 +1,4 @@
+code,bus,snapshot_load_kW,snapshot_existing_pv_kW,year_load_min_kW,year_load_max_kW,year_pv_max_kW,daylight_steps,steps_load_le_snapshot,steps_pv_ge_90pct_and_load_le_snapshot
+1-LV-rural1--0-sw,4,80.0,160.4,6.9,74.4,92.4,14278,35136,0
+1-LV-semiurb5--0-sw,51,409.0,137.1,19.7,185.7,80.4,15035,35136,0
+1-LV-urban6--0-sw,17,441.0,57.1,13.1,186.1,33.3,15035,35136,0

@@ -1,0 +1,4 @@
+code,bus,r_snapshot_t_over_v,rule_band,hc_snapshot_nc,hc_ts_nc,hc_ts_vvar,delta_kW,delta_pct,limit_at_vvar_capacity,refine_rounds,verify_steps,unresolved_violations,nonconverged_checks,min_nonconverged_kW,nonconverged_at_or_below_capacity,skipped_base_violation,verify_set,minutes
+1-LV-rural1--0-sw,4,1.037,mixed band,80.1,106.5,165.1,58.6,55.02,trafo,0,14178,0,2,500.0,0,0,all daylight steps,122.7
+1-LV-semiurb5--0-sw,51,1.24,gain expected,190.4,110.5,174.1,63.6,57.56,voltage,0,14935,0,2,500.0,0,0,all daylight steps,60.0
+1-LV-urban6--0-sw,17,0.885,no gain expected,267.9,224.7,390.8,166.1,73.92,voltage,0,14935,0,3,437.5,0,0,all daylight steps,236.8
