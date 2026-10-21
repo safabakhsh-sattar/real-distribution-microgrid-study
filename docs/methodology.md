@@ -6,7 +6,7 @@ the decisions taken and the reasons. The paper
 also records how it was reached. Sections 1 to 7 describe Study 1 (two
 feeders, snapshot); Section 8 describes Study 2a (six networks, snapshot,
 script 11) and Section 9 Study 2b (three feeders, one year of profiles,
-scripts 12 and 12b).
+scripts 12, 12b, and 14 to 17; Section 9 covers Volt-VAr over the year).
 
 ## 1. Networks and operating point
 
@@ -104,6 +104,10 @@ wrong or misleading and were corrected.
 | 18 | Time-series capacity (script 12) by a critical-step method | A full check of rural1 bus 4 at 106.6 kW found 1 violating step of 14,278: the result had been rounded up | Result rounded down (106.5 kW); full check then 0 violations |
 | 19 | Planned run time for script 12 was "about one hour" | Measured 244 min in one process (rural1 69, semiurb5 90, urban6 85 min) | Docstring corrected; `--resume` and `--workers` documented |
 | 20 | Compared snapshot and time-series capacity | The ratio is above 1 where a line or the transformer binds (1.23-2.15) and below 1 at voltage-limited far buses of semiurb5 and urban6 (0.58-0.85) | Script 12b added to show PV factor and load at the binding step; explanation stated as consistent with the data, not a formal decomposition |
+| 21 | Hourly Volt-VAr over one year at the far buses (script 14) | Almost all hours above 1.05 pu removed at the snapshot sizes (273 to 3 at semiurb5, 49 to 0 at urban6); added losses 16.2% to 29.0% higher with Volt-VAr in all nine cases | Recorded as the hourly result |
+| 22 | Volt-VAr capacity over the year at the far buses (script 15, 15-minute steps) | Capacity rose with Volt-VAr at all three far buses: 106.5 to 165.1 kW (rural1), 110.5 to 174.1 kW (semiurb5), 224.7 to 390.8 kW (urban6); the snapshot had predicted a penalty at rural1 and urban6 | Reported as the year result; the snapshot indicator r is not carried over to the year without a year check |
+| 23 | Checked whether the Volt-VAr code gives the snapshot values (script 16) | Reproduces the script 11 values at the three far buses (match: True) | The code is not the cause; the difference comes from the operating point |
+| 24 | Compared the stored operating point with the year (script 17) | Highest year PV is 57.6% to 58.6% of the snapshot PV at the three feeders; no quarter hour reaches 90% of it; stored loads are 1.08 to 2.37 times the year's peak | Explanation stated as consistent with the data, not a formal decomposition |
 
 ## 6. Verification checks performed
 
@@ -117,10 +121,13 @@ wrong or misleading and were corrected.
 - Script 11: hc_nc = min(hc_v, hc_t) and hc_vvar = min(hc_v_vvar, hc_t_vvar), each within 0.2 kW, at 113 of 113 buses. At 7 buses at least one search reached the 2000 kW ceiling.
 - Script 12: for rural1 bus 4 the capacity of 106.5 kW was checked on all 14,278 daylight steps with 0 violations (the earlier rounded-up value 106.6 kW had 1). For all nine buses the capacity holds on the verification set (0 unresolved violations, none at the 2000 kW ceiling).
 - Script 12b asserts that the binding time stamps of `timeseries_hc.csv` match the profile index.
+- Script 14 (hourly, far buses): 0 failed power flows at rural1, semiurb5 and urban6.
+- Script 15: verify_steps counts the daylight steps that are not in the critical set (14,178 of 14,278 at rural1; 14,935 of 15,035 at semiurb5 and urban6). The 100 critical steps are checked by the bisection, so every daylight step is covered. No unresolved violations, and no non-converged power flow at or below the final capacity.
+- Script 16 reproduces the script 11 no-control and Volt-VAr capacities at the three far buses (match: True).
 
 ## 7. Known limitations and open items
 
-1. Study 1 and Study 2a are single snapshots at the stored SimBench operating point; study cases are not evaluated. Study 2b uses annual profiles on three feeders only (three buses per feeder for capacity, the far bus for energy).
+1. Study 1 and Study 2a are single snapshots at the stored SimBench operating point; study cases are not evaluated. Study 2b uses annual profiles on three feeders only (three buses per feeder for capacity, the far bus for energy and for Volt-VAr over the year).
 2. Existing PV is uncontrolled; network-wide control is not modelled.
 3. No inverter apparent-power limit; no P-priority or Q-priority.
 4. Balanced single-phase model; phase imbalance not modelled.
@@ -128,8 +135,8 @@ wrong or misleading and were corrected.
 6. The cause of the Volt-VAr reduction was measured on both feeders. Rural (script 10): active power through the transformer unchanged, reactive power supplied to the LV network up by 6.6–14.8 kvar, loading up by 1.0–1.8 percentage points at the same PV size. Urban (script 10b): active power through the limiting line unchanged, the absorbed reactive power (up to 31.8 kvar) flows through it, and Volt-VAr is inactive at the 26 buses whose voltage stays at or near the dead band (at most 1.0203 pu).
 7. Scripts 03 to 06 use the earlier Volt-Watt implementation (damped iteration, first no-control baseline). The paper uses scripts 08 and 08b.
 8. Transformer loading is current-based; a criterion on apparent power would be stricter by about 3% at the LV voltage found at the limit. The effect on the HC values has not been evaluated.
-9. Time series (Study 2b): one weather year (2016); one fleet-average PV profile for the added unit; hourly means for energy, violation hours and losses (15-minute peaks are hidden); the capacity search is a critical-step method with a verification set, validated on the full year for one bus only; steps that already violate a limit without the added PV are excluded.
-10. Volt-VAr was not simulated in the time series; the central question is answered with snapshots.
+9. Time series (Study 2b): one weather year (2016); one fleet-average PV profile for the added unit; hourly means for energy, violation hours and losses (15-minute peaks are hidden); the capacity search is a critical-step method with a verification set, validated on the full year for one bus (for Volt-VAr, script 15 checks every daylight step at the far buses); steps that already violate a limit without the added PV are excluded.
+10. Volt-VAr was simulated over the year only at the far bus of each feeder (hourly violations and 15-minute capacity). At two of the three far buses the snapshot sign did not hold over the year; the central question is answered mainly with snapshots, and the year result covers the far buses only.
 11. The explanation of the snapshot-to-time-series ratio (PV factor and load at the binding step) is consistent with the numbers but is not a formal decomposition.
 12. Absolute energy values depend on the SimBench PV profile (about 650-660 kWh per kW of nameplate) and should be read as relative.
 
@@ -153,6 +160,7 @@ wrong or misleading and were corrected.
 - Outputs: `results/timeseries_hc.csv`, `results/timeseries_energy.csv`, `results/timeseries_summary.md`. Run time 244 min in one process on a Windows PC (rural1 69, semiurb5 90, urban6 85 min).
 - Script 12b: `results/binding_conditions.csv` and `.md` (stored load, profile peak, load and PV factor at each binding step). About 1 minute.
 - Figures 4 to 6: script 13 (`scripts/13_figures_study2.py`).
+- Volt-VAr over the year (scripts 14 to 17), far bus of each feeder only: script 14 gives hourly violation hours and losses (`results/vvar_annual_hour_summary.md`); script 15 gives the 15-minute capacity with the Volt-VAr iteration in every power flow, using the critical-step search and sets of script 12, and checks every daylight step at the final capacity (`results/vvar_timeseries_hc.csv`, `results/vvar_timeseries_summary.md`); script 16 checks that the Volt-VAr code reproduces the snapshot values of script 11; script 17 compares the year's PV and load with the stored operating point (`results/snapshot_condition.csv`). Run time: script 14 about 2.5 h with three workers; script 15 about 7 h in one process (rural1 123 min, semiurb5 60 min, urban6 237 min).
 
 ## 10. Reproducibility
 

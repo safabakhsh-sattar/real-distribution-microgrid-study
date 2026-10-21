@@ -1,6 +1,6 @@
 # Time-series study: design (draft, 9 Oct 2026)
 
-Status: plan only. No time-series results exist yet. The numbers in Section 1
+Status: superseded on 21 Oct 2026. This is the plan of 9 Oct, kept as a record. The results are in paper Sections 3.8 and 3.9 and in methodology Section 9. The planned script name became scripts/12_timeseries.py and scripts/15_vvar_timeseries_hc.py, and the Volt-VAr question (Q3) was answered in Section 3.9. The numbers in Section 1
 come from the SimBench profile data, read with `simbench.get_absolute_values`.
 
 ## 1. What the data check showed

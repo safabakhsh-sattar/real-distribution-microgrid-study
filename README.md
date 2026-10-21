@@ -46,8 +46,8 @@ above 100%. Urban buses whose voltage stays in the Volt-VAr dead band
 
 - Without control the thermal limit binds first at 89 of 113 buses and the voltage limit at 24. The thermal element is the transformer on rural1 only and a line on the other five networks.
 - Volt-VAr acts as a gain on the voltage limit and a penalty on the thermal limit; the capacity is the smaller of the two (113 of 113 buses).
-- Where the thermal limit binds first, Volt-VAr never raised capacity (0 of 89; median -0.9%, worst -3.6%). Where the voltage limit binds first it raised capacity at 21 of 24 buses (median +17.6%, up to +31.6%).
-- Screening indicator r = hc_t / hc_v from two searches without control: no gain for r < 1 (0 of 89), gain at all 19 buses with r >= 1.05, mixed between 1.00 and 1.05. The threshold is specific to this sample.
+- In the snapshot, where the thermal limit binds first, Volt-VAr never raised capacity (0 of 89; median -0.9%, worst -3.6%). Where the voltage limit binds first it raised capacity at 21 of 24 buses (median +17.6%, up to +31.6%).
+- Snapshot screening indicator r = hc_t / hc_v from two searches without control: no gain for r < 1 (0 of 89), gain at all 19 buses with r >= 1.05, mixed between 1.00 and 1.05. The threshold is specific to this sample.
 - Buses inside the Volt-VAr dead band at the uncontrolled capacity (<= 1.02 pu) are unchanged (20 of 20).
 
 ### Study 2b: one year of profiles, three feeders (scripts 12, 12b)
@@ -55,7 +55,9 @@ above 100%. Urban buses whose voltage stays in the Volt-VAr dead band
 - Time-series capacity (no control, 15-minute steps) is 1.23 to 2.15 times the snapshot capacity at line- or transformer-limited buses and 0.58 to 0.85 times at the voltage-limited buses of semiurb5 and urban6 (1.33 at the voltage-limited far bus of rural1). The sign of the bias depends on the binding limit.
 - Sizing the far bus by the snapshot capacity gave 273 hours per year above 1.05 pu at semiurb5 bus 51 and 49 hours at urban6 bus 17 (hourly means).
 - The tuned Volt-Watt curve (1.03-1.05 pu) removed every hourly violation in the nine cases but curtailed 8% to 32% of the available energy at the sizes studied. Each extra kW of nameplate delivered 61% to 79% of the average annual energy per kW.
-- Volt-VAr was not simulated over time (future work).
+- Volt-VAr over the year at the far bus of each feeder (script 15, every daylight step verified): capacity rose from 106.5 to 165.1 kW at rural1 (+55.0%), from 110.5 to 174.1 kW at semiurb5 (+57.6%) and from 224.7 to 390.8 kW at urban6 (+73.9%).
+- The snapshot predicted a small penalty at rural1 and urban6, so the snapshot indicator did not hold over the year at two of the three far buses. Scripts 16 and 17 show that the code is not the cause: the year's PV peaks at about 58% of the snapshot PV.
+- Hourly voltage violations at the snapshot sizes fell to 3 hours or fewer at the far buses (script 14).
 
 Full write-up: [docs/paper-draft.md](docs/paper-draft.md)
 
@@ -129,6 +131,10 @@ Run from the repository root.
 | 15 | `scripts/12_timeseries.py` | Study 2b: time-series capacity and annual energy, three feeders (244 min in one process; `--workers`, `--resume`) | `timeseries_hc.csv`, `timeseries_energy.csv`, `timeseries_summary.md` |
 | 16 | `scripts/12b_binding_conditions.py` | Load and PV factor at the binding step (about 1 min) | `binding_conditions.csv`, `binding_conditions.md` |
 | 17 | `scripts/13_figures_study2.py` | Figures 4 to 6 | `fig4`, `fig5`, `fig6` (.png) |
+| 18 | `scripts/14_vvar_annual.py` | Volt-VAr over one year at the far buses, hourly means (about 2.5 h with `--workers 3`) | `vvar_annual_hour_summary.md` |
+| 19 | `scripts/15_vvar_timeseries_hc.py` | Volt-VAr time-series capacity at the far buses, 15-minute steps, all daylight steps verified (about 7 h in one process; `--workers`, `--sampled` for a quick test) | `vvar_timeseries_hc.csv`, `vvar_timeseries_summary.md` |
+| 20 | `scripts/16_vvar_snapshot_check.py` | Checks the Volt-VAr code against the script 11 snapshot values (a few minutes) | `snapshot_vvar_check.csv` |
+| 21 | `scripts/17_snapshot_condition.py` | Compares the year's PV and load with the stored operating point (no power flow) | `snapshot_condition.csv` |
 
 `scripts/03b_diagnostic_transformer_check.py` is the diagnostic that revealed
 the transformer bottleneck. Scripts 03 to 06 are earlier steps whose
@@ -149,7 +155,7 @@ docs/       Paper draft, methodology, progress log, weekly reviews
 - Studies 1 and 2a are single snapshots; SimBench study cases (scenarios 1 and 2) are not evaluated
 - Study 2a: 113 buses of six networks (all buses of rural1, 20 evenly spaced buses of each other network); counts are sample counts, and the indicator threshold is sample-specific
 - Study 2b: three feeders, three buses per feeder, one weather year, one fleet-average PV profile; energy, violation hours and losses use hourly means; the capacity search is a critical-step method with a verification set
-- Volt-VAr was not simulated in the time series
+- Volt-VAr over the year was simulated at the far bus of each feeder only; the indicator was not tested over the year at other buses
 - Existing PV units are uncontrolled; only the added unit applies Volt-VAr or Volt-Watt
 - No inverter apparent-power limit is imposed
 - Balanced single-phase equivalent (no phase imbalance)
@@ -165,6 +171,6 @@ been withdrawn: the default Volt-Watt curve is inactive within the feasible
 region.
 
 Next steps:
-- Volt-VAr over the year at the same buses, to test the indicator with profiles
+- Volt-VAr over the year at the near and middle buses of each feeder, to test the indicator with profiles
 - Inverter apparent-power limit (P-priority and Q-priority); other SimBench operating points
 - Storage and EV flexibility to lift the thermal ceiling

@@ -818,7 +818,7 @@ Over one year the capacity rose with Volt-VAr at all three far buses, by 55% to 
 
 **Checks of the result.** Script 16 repeats the snapshot search on the stored operating point of each feeder and reproduces the script 11 values, without control and with Volt-VAr, at all three far buses. The code therefore agrees with the snapshot study, and the difference comes from the operating point. Script 17 compares that point with the one-year profiles. The stored study case has the existing PV at full output, while the year never exceeds 58% of it at any of the three feeders (57.6%, 58.6% and 58.3%), and no quarter hour reaches 90% of it. The stored loads are also 1.08 to 2.37 times the largest load of the year (Table 11). The snapshot penalty at rural1 and urban6 is a thermal limit reached at full PV output, a state the year does not reach. This explanation is consistent with the numbers but is not a formal decomposition.
 
-At the Volt-VAr capacities every daylight step was verified (14,178 steps at rural1, 14,935 at semiurb5 and urban6), with no unresolved violation. Seven searched power flows did not converge (2, 2 and 3 at the three feeders); all were at sizes above the final capacity of their feeder.
+At the Volt-VAr capacities every daylight step was verified: the bisection checks the 100 critical steps, and the verification set covers the rest (14,178 steps at rural1 and 14,935 at semiurb5 and urban6), with no unresolved violation. Seven searched power flows did not converge (2, 2 and 3 at the three feeders); all were at sizes above the final capacity of their feeder.
 
 The test covers one bus per feeder and one weather year. The indicator needs the same year comparison at the other buses before it is used for year-based planning.
 

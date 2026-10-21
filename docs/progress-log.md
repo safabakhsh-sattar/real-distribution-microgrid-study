@@ -123,3 +123,14 @@
 - Added scripts/12b_binding_conditions.py (load and PV factor at the binding step, makes Table 11 reproducible) and scripts/13_figures_study2.py (figures 4 to 6)
 - Synced: methodology (decision-log steps 15-20, new Sections 8 and 9), README (key findings, script table, limitations, status), weekly reviews
 - Open: own reading of the new paper and oral drill; Volt-VAr over the year; inverter apparent-power limit; storage and EV after week 8
+
+## October 21, 2026 (Volt-VAr over the year, checks, paper and weekly review)
+- Added scripts/14_vvar_annual.py (hourly, far buses): almost all voltage-violation hours removed at the snapshot sizes; added losses 16.2% to 29.0% higher with Volt-VAr in all nine cases; 0 failed power flows
+- Added scripts/15_vvar_timeseries_hc.py (15-minute steps, far buses, every daylight step checked at the final capacity): Volt-VAr capacity over the year 165.1 kW (rural1, +55.0%), 174.1 kW (semiurb5, +57.6%), 390.8 kW (urban6, +73.9%); 0 unresolved violations; no non-converged power flow at or below capacity
+- Added scripts/16_vvar_snapshot_check.py: the Volt-VAr code reproduces the script 11 values at the three far buses (match: True); the snapshot-to-year gap is not a coding error
+- Added scripts/17_snapshot_condition.py: the highest year PV is 57.6% to 58.6% of the snapshot PV; no quarter hour reaches 90% of it; stored loads are 1.08 to 2.37 times the year's peak
+- Finding: the snapshot indicator r did not predict the year sign at two of three far buses (urban6 r = 0.885, year +73.9%; rural1 snapshot -1.5%, year +55.0%). Reported as a limitation; the indicator stays a snapshot result
+- Paper updated (abstract, contributions, Sections 2.7, 3.9, discussion, limitations, conclusion); committed and pushed (commit 0e10167)
+- Week 6 review written to docs/weekly-reviews.md (commit 25c6cac)
+- Synced: README, methodology (Section 9, decision log steps 21-24, verification checks, limitations), this log, and the time-series design note (marked superseded)
+- Open: Week 7 checklist (commit these documents); defense sheet in Week 8
