@@ -1,6 +1,6 @@
 # Snapshot at the SimBench study cases (script 19)
 
-Voltage limit 1.05 pu with the stored slack voltage (labels without '-sb', and 'stored'); 1.1 pu (EN 50160) with the SimBench slack voltage of the case (labels ending '-sb'). Thermal limit 100 % (current-based), search 0.1 kW, ceiling 2000 kW, 'equal' within 0.2 kW. Capacities are nameplate kW; the added unit injects Pn x f_pv. Run time 23.3 min.
+Voltage limit 1.05 pu with the stored slack voltage (labels without '-sb', and 'stored'); 1.1 pu (EN 50160) with the SimBench slack voltage of the case (labels ending '-sb'). Thermal limit 100 % (current-based), search 0.1 kW, ceiling 2000 kW, 'equal' within 0.2 kW. Capacities are nameplate kW; the added unit injects Pn x f_pv. Regenerated from the saved CSV.
 
 ## Study cases of each network (all cases, the run uses the selected ones)
 
@@ -162,7 +162,12 @@ Change relative to no control at the same case (nameplate kW).
 
 ## Case lPV: inverter apparent-power limit (S = Pn, P priority)
 
-PV factor 0.950 is above 0.898: the limit can bind and was searched. Buses where it changed Volt-VAr: 83 of 113.
+PV factor 0.950 is above 0.898: the limit can bind and was searched. Reactive power is limited to sqrt(Pn^2 - P^2).
+
+| first limit | buses | changed vs unlimited Volt-VAr | median change %, unlimited Volt-VAr | median change %, S = Pn | higher than no control, S = Pn |
+|---|---|---|---|---|---|
+| thermal | 44 | 0 | -1.29 | -1.29 | 0 |
+| voltage | 69 | 0 | 28.53 | 28.53 | 68 |
 
 # Case lW: script 11 tables on the sample (113 buses)
 
@@ -324,6 +329,7 @@ PV factor 0.800 is at or below 0.898: with S = Pn the full 0.44 Pn of reactive p
 - Same for Volt-VAr on all PV units (must be 0): 0
 - Non-converged checks above the capacity (expected, no effect): 1063
 - Buses with a search at the 2000 kW ceiling: 4
+- thermal_element, v_pv_nc and hc_vvar_slim recomputed with the fixed solve() (--recheck): 239 of 239 rows; S-limit power flows not converged at or below its capacity (must be 0): 0
 - Stored rows (case 'stored') must equal script 11 where the bus is in both; script 21 checks this.
 
 Send this file back: results\studycase_summary.md

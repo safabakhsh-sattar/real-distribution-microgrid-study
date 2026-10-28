@@ -191,8 +191,9 @@ def apply_case(net, label):
     case, sb_slack = parse_label(label)
     net = copy.deepcopy(net)
     pv = _is_pv(net)
-    units = [(int(i), int(b), float(p) * 1000)
-             for i, b, p, is_pv in zip(net.sgen.index, net.sgen.bus, net.sgen.p_mw, pv) if is_pv]
+    units = [(int(i), int(b), float(p) * 1000, float(q))           # q: stored reactive power (MVAr)
+             for i, b, p, q, is_pv in zip(net.sgen.index, net.sgen.bus, net.sgen.p_mw,
+                                          net.sgen.q_mvar, pv) if is_pv]
     if case == "stored":
         return net, 1.0, units
     cv = case_values(net, case)
@@ -225,8 +226,12 @@ def solve(net, idx, bus, kw, control, f_pv, units):
     p = kw * f_pv
     net.sgen.at[idx, "p_mw"] = p / 1000
     net.sgen.at[idx, "q_mvar"] = 0.0
+    # Existing PV units start every power flow at their stored reactive power, so a
+    # previous vvar_all search cannot leave its Q behind (fix of 29 Oct 2026).
+    for i, _, _, q0 in units:
+        net.sgen.at[i, "q_mvar"] = q0
     if control == "vvar_all":
-        for i, _, _ in units:
+        for i, _, _, _ in units:
             net.sgen.at[i, "q_mvar"] = 0.0
     if control == "none":
         pp.runpp(net)
@@ -235,7 +240,7 @@ def solve(net, idx, bus, kw, control, f_pv, units):
         net.sgen.at[idx, "q_mvar"] = cosphi_q_kvar(p, kw) / 1000
         pp.runpp(net)
         return
-    ctrl = [(idx, bus, kw)] + (units if control == "vvar_all" else [])
+    ctrl = [(idx, bus, kw)] + ([(i, b, pn) for i, b, pn, _ in units] if control == "vvar_all" else [])
     q_prev = {i: 0.0 for i, _, _ in ctrl}
     for _ in range(MAX_IT[control]):
         pp.runpp(net)
@@ -380,11 +385,33 @@ def analyse_bus(task):
         "hc_vvar_all": hc_all, "vvar_all_pct": pct(hc_all),
         "vvar_all_effect": effect_of(round(hc_all - hc_nc, 1)),
         "hc_vvar_slim": hc_slim, "slim_run": f_pv > F_SLIM,
+        "nonconv_slim_at_or_below": S.nonconv_at_or_below("vvar_slim", hc_slim),
+        "rechecked": True,                     # computed with the fixed solve()
         "nonconv_vvar_at_or_below": S.nonconv_at_or_below("vvar", hc_vv),
         "nonconv_vvar_all_at_or_below": S.nonconv_at_or_below("vvar_all", hc_all),
         "nonconv_total": len(S.nonconv),
         "capped": max(hc_v, hc_t, hc_nc, hc_vv, hc_v_vv, hc_t_vv, hc_cp, hc_all) >= s11.MAX_KW - 0.5,
     }
+
+
+def recheck_row(task):
+    """Recompute only the columns that the leftover-Q error of the first version affected:
+    thermal_element, v_pv_nc and hc_vvar_slim. All other columns were computed before the
+    first vvar_all search of each bus and are kept as they are."""
+    code, case, bus, hc_t, hc_nc, hc_vv, slim = task
+    base, f_pv, units = get_case(code, case)
+    net = copy.deepcopy(base)
+    idx = pp.create_sgen(net, bus=bus, p_mw=0.0, q_mvar=0.0)
+    S = Searcher(net, idx, bus, f_pv, units, v_limit_of(case))
+    hc_slim = S.hc("vvar_slim") if slim else hc_vv
+    solve(net, idx, bus, hc_t, "none", f_pv, units)
+    t_el = ("trafo" if net.res_trafo.loading_percent.max() >= net.res_line.loading_percent.max()
+            else "line")
+    solve(net, idx, bus, hc_nc, "none", f_pv, units)
+    v_pv = round(float(net.res_bus.vm_pu.at[bus]), 4)
+    return {"code": code, "case": case, "bus": int(bus), "thermal_element": t_el, "v_pv_nc": v_pv,
+            "hc_vvar_slim": hc_slim,
+            "nonconv_slim_at_or_below": S.nonconv_at_or_below("vvar_slim", hc_slim)}
 
 
 def network_info(code, case):
@@ -475,14 +502,25 @@ def write_summary(path, factors, info, df, seconds):
                 "Change relative to no control at the same case (nameplate kW).", "",
                 md_table(variant_table(g))]
         slim_run = bool(g.slim_run.any())
-        out += ["", f"## Case {case}: inverter apparent-power limit (S = Pn, P priority)", "",
-                (f"PV factor {g.f_pv.iloc[0]:.3f} is above {F_SLIM:.3f}: the limit can bind and was "
-                 f"searched. Buses where it changed Volt-VAr: "
-                 f"{int((abs(g.hc_vvar_slim - g.hc_vvar) > s11.EQUAL_TOL_KW).sum())} of {len(g)}.")
-                if slim_run else
-                (f"PV factor {g.f_pv.iloc[0]:.3f} is at or below {F_SLIM:.3f}: with S = Pn the full "
-                 f"0.44 Pn of reactive power is available (sqrt(1 - f^2) >= 0.44), so the limit "
-                 f"does not change any result at this case (not searched).")]
+        out += ["", f"## Case {case}: inverter apparent-power limit (S = Pn, P priority)", ""]
+        if slim_run:
+            rows = []
+            for fl, h in g.groupby("first_limit"):
+                sp = 100 * (h.hc_vvar_slim - h.hc_nc) / h.hc_nc
+                rows.append({"first limit": fl, "buses": len(h),
+                             "changed vs unlimited Volt-VAr":
+                                 int((abs(h.hc_vvar_slim - h.hc_vvar) > s11.EQUAL_TOL_KW).sum()),
+                             "median change %, unlimited Volt-VAr": round(h.delta_pct.median(), 2),
+                             "median change %, S = Pn": round(sp.median(), 2),
+                             "higher than no control, S = Pn":
+                                 int((h.hc_vvar_slim - h.hc_nc > s11.EQUAL_TOL_KW).sum())})
+            out += [f"PV factor {g.f_pv.iloc[0]:.3f} is above {F_SLIM:.3f}: the limit can bind and "
+                    f"was searched. Reactive power is limited to sqrt(Pn^2 - P^2).", "",
+                    md_table(pd.DataFrame(rows))]
+        else:
+            out += [f"PV factor {g.f_pv.iloc[0]:.3f} is at or below {F_SLIM:.3f}: with S = Pn the "
+                    f"full 0.44 Pn of reactive power is available (sqrt(1 - f^2) >= 0.44), so the "
+                    f"limit does not change any result at this case (not searched)."]
     ts_rows = df[df.position != ""]
     if not ts_rows.empty:
         cols = ["code", "case", "bus", "position", "f_pv", "hc_nc", "first_limit", "ratio_t_v",
@@ -497,6 +535,12 @@ def write_summary(path, factors, info, df, seconds):
             f"- Non-converged checks above the capacity (expected, no effect): "
             f"{int(df.nonconv_total.sum() - df.nonconv_vvar_at_or_below.sum() - df.nonconv_vvar_all_at_or_below.sum())}",
             f"- Buses with a search at the {s11.MAX_KW:.0f} kW ceiling: {int(df.capped.sum())}",
+            ("- thermal_element, v_pv_nc and hc_vvar_slim recomputed with the fixed solve() "
+             f"(--recheck): {int(df.rechecked.fillna(False).astype(bool).sum())} of {len(df)} rows; "
+             f"S-limit power flows not converged at or below its capacity (must be 0): "
+             f"{int(df.nonconv_slim_at_or_below.fillna(0).sum())}")
+            if "rechecked" in df.columns else
+            "- WARNING: thermal_element, v_pv_nc and hc_vvar_slim are from the first version; run --recheck",
             "- Stored rows (case 'stored') must equal script 11 where the bus is in both; script 21 checks this.",
             "", "Send this file back: " + os.path.relpath(path, ROOT)]
     with open(path, "w", encoding="utf-8") as f:
@@ -530,6 +574,9 @@ def main():
     ap.add_argument("--resume", action="store_true")
     ap.add_argument("--list-cases", action="store_true")
     ap.add_argument("--summarize-only", action="store_true")
+    ap.add_argument("--recheck", action="store_true",
+                    help="recompute only thermal_element, v_pv_nc and hc_vvar_slim of the saved CSV "
+                         "with the fixed solve() (about 5 to 10 min with --workers 7)")
     args = ap.parse_args()
 
     os.makedirs(os.path.join(ROOT, "results"), exist_ok=True)
@@ -555,9 +602,30 @@ def main():
             labels.append(c + SB_SUFFIX)
     print(f"selected study cases: {cases}; operating points: {labels}", flush=True)
 
-    if args.summarize_only:
+    if args.summarize_only or args.recheck:
         df = pd.read_csv(p_csv, keep_default_na=False, na_values=[""])
         df["position"] = df.position.fillna("")
+        if args.recheck:
+            t0 = time.time()
+            tasks = [(r.code, r.case, int(r.bus), float(r.hc_t), float(r.hc_nc), float(r.hc_vvar),
+                      bool(r.slim_run)) for r in df.itertuples()]
+            print(f"recheck: {len(tasks)} rows, workers = {args.workers}", flush=True)
+            if args.workers > 1:
+                ctx = multiprocessing.get_context("spawn")
+                with ctx.Pool(args.workers) as pool:
+                    fixed = list(pool.imap_unordered(recheck_row, tasks, chunksize=1))
+            else:
+                fixed = [recheck_row(t) for t in tasks]
+            fx = pd.DataFrame(fixed).set_index(["code", "case", "bus"])
+            df = df.set_index(["code", "case", "bus"])
+            changed_el = int((df.loc[fx.index, "thermal_element"] != fx.thermal_element).sum())
+            for col in ("thermal_element", "v_pv_nc", "hc_vvar_slim", "nonconv_slim_at_or_below"):
+                df.loc[fx.index, col] = fx[col]
+            df["rechecked"] = True
+            df = df.reset_index().sort_values(["case", "code", "bus"]).reset_index(drop=True)
+            df.to_csv(p_csv, index=False, encoding="utf-8")
+            print(f"recheck done in {(time.time() - t0) / 60:.1f} min; thermal element label changed "
+                  f"at {changed_el} rows", flush=True)
         run_labels = [c for c in df.case.unique() if c != "stored"]
         info = [network_info(s11.sb_code(g, "0"), c) for c in run_labels for g in args.grids]
         write_summary(p_md, fac.to_dict("records"), info, df, None)
