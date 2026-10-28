@@ -1,0 +1,19 @@
+code,bus,position,control,hc_ts_nc,hc_ts_ctrl,delta_kW,delta_pct,limit_at_capacity,binding_time,refine_rounds,verify_steps,unresolved_violations,nonconverged_checks,nonconverged_at_or_below_capacity,skipped_base_violation,verify_set,source,minutes
+1-LV-rural1--0-sw,4,far,vvar,106.5,165.1,58.6,55.02,trafo,-,0,14178,0,2,0,0,all daylight steps,script 15 (reused),122.7
+1-LV-semiurb5--0-sw,51,far,vvar,110.5,174.1,63.6,57.56,voltage,-,0,14935,0,2,0,0,all daylight steps,script 15 (reused),60.0
+1-LV-urban6--0-sw,17,far,vvar,224.7,390.8,166.1,73.92,voltage,-,0,14935,0,3,0,0,all daylight steps,script 15 (reused),236.8
+1-LV-rural1--0-sw,4,far,cosphi,106.5,115.2,8.7,8.17,voltage,27 Jul 13:00,0,14178,0,0,0,0,all daylight steps,script 20,13.7
+1-LV-rural1--0-sw,7,near,cosphi,175.7,170.8,-4.9,-2.79,trafo,20 May 12:00,0,14178,0,0,0,0,all daylight steps,script 20,14.0
+1-LV-rural1--0-sw,11,middle,cosphi,176.7,171.7,-5.0,-2.83,trafo,20 May 12:00,0,14178,0,0,0,0,all daylight steps,script 20,14.1
+1-LV-semiurb5--0-sw,74,near,cosphi,397.4,387.8,-9.6,-2.42,line,24 May 11:00,0,14935,0,0,0,0,all daylight steps,script 20,14.8
+1-LV-semiurb5--0-sw,51,far,cosphi,110.5,129.2,18.7,16.92,voltage,24 Jul 10:15,0,14935,0,0,0,0,all daylight steps,script 20,14.7
+1-LV-semiurb5--0-sw,72,middle,cosphi,246.5,298.6,52.1,21.14,voltage,01 Aug 10:45,1,29866,0,0,0,0,all daylight steps,script 20,28.0
+1-LV-urban6--0-sw,54,near,cosphi,439.3,430.0,-9.3,-2.12,line,24 May 11:00,1,29868,0,0,0,0,all daylight steps,script 20,38.0
+1-LV-rural1--0-sw,7,near,vvar,175.7,170.8,-4.9,-2.79,trafo,20 May 12:00,0,14178,0,2,0,0,all daylight steps,script 20,90.8
+1-LV-rural1--0-sw,11,middle,vvar,176.7,169.7,-7.0,-3.96,trafo,20 May 12:00,0,14178,0,2,0,0,all daylight steps,script 20,101.2
+1-LV-semiurb5--0-sw,74,near,vvar,397.4,393.7,-3.7,-0.93,line,24 May 11:00,0,14935,0,1,0,0,all daylight steps,script 20,119.6
+1-LV-urban6--0-sw,17,far,cosphi,224.7,252.3,27.6,12.28,voltage,29 May 09:15,0,14935,0,0,0,0,all daylight steps,script 20,28.8
+1-LV-urban6--0-sw,50,middle,cosphi,442.6,432.4,-10.2,-2.3,line,24 May 11:00,1,29869,0,0,0,0,all daylight steps,script 20,56.7
+1-LV-semiurb5--0-sw,72,middle,vvar,246.5,381.2,134.7,54.65,line,24 May 11:00,0,14935,0,2,0,0,all daylight steps,script 20,191.2
+1-LV-urban6--0-sw,54,near,vvar,439.3,436.6,-2.7,-0.61,line,24 May 11:00,1,29868,0,1,0,0,all daylight steps,script 20,238.8
+1-LV-urban6--0-sw,50,middle,vvar,442.6,429.6,-13.0,-2.94,line,24 May 11:00,1,29869,0,1,0,0,all daylight steps,script 20,249.7

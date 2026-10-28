@@ -1,37 +1,16 @@
 # When Does Default Volt-VAr Help or Hurt PV Hosting Capacity in Low-Voltage Feeders?
 # Voltage and Thermal Limits, a Screening Indicator, and Snapshot versus Time-Series Capacity on Real SimBench Networks
 
+**Sattar Safabakhsh**
+
+Independent Researcher, Susangerd, Khuzestan, Iran
+
+Correspondence: sattarsafabakhsh.eng@gmail.com
+
 ## Abstract
-Smart-inverter functions such as Volt-VAr control (IEEE 1547-2018) are
-widely proposed to raise the PV hosting capacity (HC) of low-voltage (LV)
-feeders, but most studies apply voltage constraints alone. This study asks
-when the default Volt-VAr curve helps or hurts HC once voltage (1.05 pu)
-and thermal (line and transformer loading ≤ 100%) limits are enforced
-together, and whether a simple indicator can predict the outcome. Using
-pandapower on six real German LV networks from SimBench (15 to 129 buses,
-160 to 630 kVA), HC was computed in kW at 113 load buses. Without control
-the thermal limit binds first at 89 buses and the voltage limit at 24.
-Volt-VAr acts as a gain on the voltage limit and a penalty on the thermal
-limit, and the resulting HC is the smaller of the two (113 of 113 buses).
-It never raised snapshot HC where the thermal limit binds first (0 of 89; median
-−0.9%, worst −3.6%) and raised it at 21 of the 24 buses where voltage
-binds first (median +17.6%, up to +31.6%). The ratio r of thermal-only to
-voltage-only HC without control, which needs two searches without control,
-separated the snapshot cases in this sample: Volt-VAr never helped for r < 1 (0 of
-89) and helped at all 19 buses with r ≥ 1.05. Buses whose voltage stayed
-in the dead band (≤ 1.02 pu) at the uncontrolled limit were unchanged
-(20 of 20). On two further scenarios of the same six networks (180 buses, predictions fixed in advance), the same rules held: no gain for r < 1 (0 of 151), gain at all 24 buses with r ≥ 1.05, and no change in the dead band (61 of 61). One year of 15-minute SimBench profiles on three feeders (nine
-buses) shows that snapshot HC is a biased guide whose sign depends on the
-binding limit: where a line or the transformer binds, time-series HC is
-1.23 to 2.15 times the snapshot value; at the voltage-limited buses of the
-two larger feeders it is 0.58 to 0.85 times, and sizing the far bus by the
-snapshot gave 49 to 273 hours per year above 1.05 pu. A Volt-Watt curve
-tuned to 1.03–1.05 pu removed all hourly violations in the cases studied but curtailed 8 to 32%
-of the available energy at the sizes studied, and each extra kW of
-nameplate yielded only 61 to 79% of the average annual energy per kW.
-Over one year at the three far buses, Volt-VAr removed almost all voltage-violation hours at the snapshot sizes (one exception at 1.5 times the snapshot size), raised the added losses by 16% to 29%, and raised the time-series capacity by 55% to 74%, although the snapshot predicted a small penalty at two of them. The snapshot indicator therefore did not carry over to the year at these buses, and it was not tested at other buses. The binding limit should be
-identified before an inverter control is chosen, and capacity should be
-reported as delivered power and checked against time series.
+Volt-VAr control is proposed to raise PV hosting capacity (HC) in low-voltage feeders, but most studies enforce voltage limits alone. We ask when the default IEEE 1547 Volt-VAr curve helps or hurts HC under voltage (1.05 pu) and thermal (100% loading) limits together, and whether a simple indicator predicts the outcome. Using six real German LV networks from SimBench (113 buses), the thermal limit binds first at 89 buses and the voltage limit at 24. Volt-VAr never raised snapshot HC where the thermal limit binds first (0 of 89) and raised it at 21 of 24 voltage-limited buses (median +17.6%). The screening ratio r of thermal-only to voltage-only HC separated the cases: no gain for r < 1, and gain at all 19 buses with r ≥ 1.05. A held-out test on two other scenarios of the same networks (180 buses) supported these rules. Over one year at three far buses, Volt-VAr raised capacity by 55% to 74%, although the snapshot predicted a penalty at two of them. The snapshot indicator therefore did not carry over to the year, and capacity should be checked against time-series profiles.
+
+**Keywords:** hosting capacity; low-voltage networks; photovoltaic; Volt-VAr control; IEEE 1547; thermal limits; screening indicator; SimBench
 
 ## 1. Introduction
 
@@ -39,23 +18,17 @@ Increasing penetration of rooftop photovoltaic (PV) systems in low-voltage
 (LV) distribution networks is often constrained by voltage rise, a
 phenomenon extensively studied under the term "hosting capacity" (HC).
 Smart inverter functions — particularly Volt-VAr and Volt-Watt control
-per IEEE 1547-2018 — have been proposed to mitigate this constraint.
+per IEEE 1547-2018 [1] — have been proposed to mitigate this constraint.
 
 However, in the studies reviewed here, control strategies are mostly
-evaluated under voltage constraints alone. For example, Alfouly et al.
-(2025) use simplified single-feeder test systems and do not quantify
-hosting capacity in kW or consider thermal loading of network equipment.
+evaluated under voltage constraints alone. For example, Alfouly et al. [2] use a single simplified test network, express hosting capacity in apparent power rather than kW, and do not report line or transformer loading.
 Transformer thermal limitations have been independently recognized as a
-critical HC constraint: Ame-Oko and Lavrova (2024) address this via
-battery storage dispatch, while Qamar et al. (2023), in a comprehensive
+critical HC constraint: Ame-Oko and Lavrova [3] address this via
+transformer loading and degradation considerations, while Qamar et al. [4], in a comprehensive
 review, note that DSOs in several countries (e.g., Portugal <25%, Spain
 <50% and Italy <65% of the MV/LV transformer rating) impose hard limits
 on DG capacity as a fraction of transformer rating, confirming the
-practical relevance of this constraint. Dissanayake et al. (2022)
-combine voltage control with dynamic line rating on a real Sri Lankan
-network but test only a single 25-node topology. Chathurangi et al.
-(2021) compare Volt-VAr and Volt-Watt performance across feeder types but
-do not examine the interaction between reactive power support and
+practical relevance of this constraint. Dissanayake et al. [5] combine voltage control with dynamic line rating on an urban low-voltage network in Sri Lanka but evaluate a single 25-node network. Chathurangi et al. [6] compare Volt-VAr and Volt-Watt control under different connection standards and show that their benefit depends on inverter location, but do not examine the interaction between reactive power support and
 transformer thermal limits.
 
 To the best of our knowledge, and within the literature reviewed, none of
@@ -109,11 +82,11 @@ contributions are:
 Sections 2.1–2.5 describe the models and the search used throughout; Sections 2.6 and 2.7 describe the two extensions.
 
 ### 2.1 Network Models and Operating Point
-The study uses the SimBench dataset (Meinecke et al., 2020; University of
+The study uses the SimBench dataset [7] (University of
 Kassel, Fraunhofer IEE, RWTH Aachen, TU Dortmund). Unlike standard
 synthetic test systems (e.g., IEEE 33-bus), SimBench networks are derived
 from real German DSO planning principles. Power flow uses pandapower's
-Newton-Raphson solver (Thurner et al., 2018).
+Newton-Raphson solver [8].
 
 | Feeder | SimBench code | Transformer | Loads | Existing PV | Base trafo loading |
 |---|---|---|---|---|---|
@@ -131,7 +104,7 @@ one year of 15-minute profiles.
 
 ### 2.2 Constraints
 - **Voltage:** maximum bus voltage ≤ 1.05 pu. This is a conservative
-  planning limit, not the EN 50160 limit: EN 50160 permits ±10% of
+  planning limit, not the EN 50160 [9] limit: EN 50160 permits ±10% of
   nominal voltage at LV. A limit of 1.10 pu is therefore also evaluated
   as a sensitivity case. Only the upper limit is enforced, since PV
   injection raises voltages.
@@ -361,6 +334,8 @@ stored (snapshot) load and with the largest load of the year.
 
 **Volt-VAr capacity over the year (script 15).** At the far bus of each feeder, the search of Q1 is repeated with the default Volt-VAr curve in every power flow (the iteration of Section 2.4). The critical set, verification set, random seed and skip list are those of script 12. Unlike Q1, the final capacity is checked on every daylight step rather than only on the verification set, and a power flow that does not converge counts as a violation. Script 16 repeats the snapshot search on the stored operating point of each feeder, and script 17 compares that operating point with the one-year profiles (Section 3.9).
 
+**Use of generative AI.** Claude Haiku 5.5 (Anthropic) was used to help draft and debug the Python scripts, to check calculations against the result files, and to edit the text of this manuscript. All simulations were run by the author on a personal computer. The author reviewed every script, result and sentence and takes full responsibility for the content and conclusions.
+
 ## 3. Results
 Sections 3.1–3.6 report Study 1 (two feeders, snapshot, all control scenarios). Section 3.7 reports Study 2a (six networks, snapshot). Section 3.8 reports Study 2b (three feeders, one year of profiles), and Section 3.9 adds Volt-VAr over the year at the far buses.
 
@@ -368,10 +343,12 @@ Sections 3.1–3.6 report Study 1 (two feeders, snapshot, all control scenarios)
 With only the 1.05 pu limit, HC ranged from 80 kW (buses 4 and 5) to
 286 kW (bus 7). Capacity was strongly and negatively rank-correlated with
 the path distance from the transformer (Spearman ρ = −0.98, n = 13;
-Figure 3): the farthest buses (0.24 km) host the least, the nearest
+Figure 1): the farthest buses (0.24 km) host the least, the nearest
 (0.005 km) the most.
 
-![Figure 3](../results/fig3_distance_vs_capacity.png)
+![Figure 1](../results/fig3_distance_vs_capacity.png)
+
+**Figure 1.** Hosting capacity against feeder path length from the transformer, rural feeder (13 load buses; numbers are bus indices). Blue: voltage limit only. Orange crosses: voltage and thermal limits. With the thermal limit, capacity falls to a narrow band (80–82 kW) at all buses because the transformer binds.
 
 ### 3.2 Rural Feeder Under Voltage and Thermal Constraints
 Adding the thermal limits changes the picture. The 160 kVA transformer,
@@ -407,7 +384,9 @@ voltage-bound at 1.05 pu (80.1 and 80.6 kW, against 83.1 and 83.0 kW at
 1.10 pu). At every other bus the result is the same for both voltage
 limits, so the transformer is the binding constraint.
 
-![Figure 1](../results/fig1_rural_comparison.png)
+![Figure 2](../results/fig1_rural_comparison.png)
+
+**Figure 2.** Rural feeder (1-LV-rural1, scenario 0, 13 load buses), ordered from the nearest to the farthest bus. (a) Change in delivered hosting capacity relative to no control for default Volt-VAr (orange) and tuned Volt-Watt (1.03–1.05 pu, purple). Default Volt-Watt equals no control at every bus and is not drawn. (b) Tuned Volt-Watt: nameplate capacity (light bars), delivered active power (dark bars) and no-control capacity (dots). Labels give the ratio of nameplate to delivered capacity.
 
 ### 3.3 Volt-VAr Control (Rural)
 Volt-VAr reduces HC at all 13 buses relative to no control at 1.05 pu:
@@ -459,7 +438,9 @@ adapted raises nameplate HC at 9 buses (up to 568.7 kW, 2.12 times the
 uncontrolled value at bus 17), yet delivered power stays within ±0.1 kW
 of the uncontrolled value at every bus.
 
-![Figure 2](../results/fig2_urban_comparison.png)
+![Figure 3](../results/fig2_urban_comparison.png)
+
+**Figure 3.** Urban feeder (1-LV-urban6, scenario 0, 53 load buses), ordered by no-control capacity from lowest to highest. (a) Change in delivered hosting capacity relative to no control for default Volt-VAr (dots) and tuned Volt-Watt (triangles). Default Volt-Watt equals no control at every bus and is not drawn. (b) No-control capacity (solid line) and tuned Volt-Watt nameplate capacity (dashed line) for the same buses.
 
 ### 3.6 Flows at the Binding Element with Volt-VAr
 To test why Volt-VAr lowers capacity, the flows at the binding element
@@ -640,6 +621,8 @@ two uncontrolled searches (Table 9, Figure 4).
 
 ![Figure 4](../results/fig4_effect_vs_ratio.png)
 
+**Figure 4.** Effect of default Volt-VAr and the screening ratio r = hc_t / hc_v for the 113 buses of the six-network snapshot study (scenario 0). (a) Each point is one bus; the vertical lines mark r = 1 and r = 1.05. (b) Number of buses per bin of r, stacked by effect: lower (orange), equal (grey) and higher (green). The counts match Table 9.
+
 In this sample Volt-VAr never raised HC for r < 1 (0 of 89) and raised it at
 all 19 buses with r ≥ 1.05. The band 1.00–1.05 is mixed (2 higher, 3 lower),
 as expected from the threshold above. The value 1.05 comes from this sample
@@ -687,6 +670,8 @@ Binding time is the step at which the time-series capacity is reached.
 | urban6 | 17 | 0.2589 | 267.9 | 224.7 | 0.84 | voltage | 24 Jul 11:00 |
 
 ![Figure 5](../results/fig5_snapshot_vs_timeseries.png)
+
+**Figure 5.** Snapshot and time-series hosting capacity without control at nine buses (three per feeder). The binding limit is given in parentheses under each bus name. Ratios (time series divided by snapshot) are shown at the end of the time-series bars. The snapshot uses the stored SimBench operating point; the time series uses one year of 15-minute steps.
 
 The time-series capacity is above the snapshot capacity at all six buses where
 a transformer or line binds (ratio 1.23 to 2.15) and at the voltage-limited
@@ -783,6 +768,8 @@ tuned Volt-Watt curve.
 | urban6, 17 | 267.9 | 401.8 | 341 | 557 | 61 |
 
 ![Figure 6](../results/fig6_energy_curtailment.png)
+
+**Figure 6.** Annual energy and curtailment with the tuned Volt-Watt curve at the far bus of each feeder (rural1 bus 4, semiurb5 bus 51, urban6 bus 17), for three nameplate sizes each: snapshot, time series and 1.5 times the larger of the two. (a) Available (dashed) and delivered (solid) annual energy. (b) Share of energy curtailed by Volt-Watt (%) against nameplate size; labels give the hours per year above 1.05 pu without control.
 
 *Losses.* The added PV increases network losses by 451 to 4686 kWh per year
 without control. With the tuned curve the increase is lower in every case, by
@@ -906,14 +893,14 @@ order of magnitude, not a general yield.
 
 **Implications.** For thermally bound feeders, raising HC requires measures
 that lift the thermal ceiling or absorb the surplus, for example storage (as
-in Ame-Oko and Lavrova, 2024), dynamic line rating (Dissanayake et al., 2022)
+in [3]), dynamic line rating [5]
 or reinforcement, rather than standard inverter curves on the snapshot evidence alone. Over a year Volt-VAr raised the capacity at two feeders where the snapshot showed a thermal limit (Section 3.9), so the choice should rest on a year-based check. Because the binding
 element differs between feeders, and between buses of one feeder, a DSO
 should first identify which limit binds, which two searches without control
 do, before selecting a strategy. Capacity should be reported as delivered
 power and checked against time series, not taken from a single snapshot or
 from nameplate alone. This qualifies the assumption in parts of the
-literature (e.g., Alfouly et al., 2025) that smart-inverter control generally
+literature (e.g., [2]) that smart-inverter control generally
 raises hosting capacity.
 
 **Numerical notes.** (i) The first Volt-Watt implementation oscillated between
@@ -1033,37 +1020,50 @@ operating points remain to be studied.
   15-minute instead of hourly energy analysis
 - Validation on unbalanced three-phase models and on non-German networks
 
-## Data and Code Availability
-SimBench networks and profiles are open data. All scripts, result files and
-documentation are in the repository
+## Author Contributions
+
+Conceptualization, S.S.; Methodology, S.S.; Software, S.S.; Validation, S.S.; Formal analysis, S.S.; Investigation, S.S.; Data curation, S.S.; Writing—original draft, S.S.; Writing—review and editing, S.S. The author has read and agreed to the published version of the manuscript.
+
+## Funding
+
+This research received no external funding.
+
+## Institutional Review Board Statement
+
+Not applicable.
+
+## Informed Consent Statement
+
+Not applicable.
+
+## Data Availability Statement
+The data used in this study are the SimBench benchmark networks and profiles [7], which are openly available through the simbench Python package. The scripts, result files and documentation needed to reproduce the results are available in the public repository
 https://github.com/safabakhsh-sattar/real-distribution-microgrid-study
-(scripts 01–10b for Study 1, 11 for Study 2a, 18 for the held-out test of Section 3.7.8, 12, 12b for Study 2b, 13 for
-Figures 4–6, 14 and 15 for Volt-VAr over the year, 16 and 17 for the checks of Section 3.9).
+(scripts 01–10b for Study 1 and Figures 1–3, 11 for Study 2a, 12 and 12b for Study 2b, 13 for Figures 4–6, 14 and 15 for Volt-VAr over the year, 16 and 17 for the checks of Section 3.9, 18 for the held-out test of Section 3.7.8).
+
+## Acknowledgments
+During the preparation of this manuscript/study, the author used Claude Haiku 5.5 (Anthropic) for drafting and debugging Python scripts, checking calculations and editing the text. The author has reviewed and edited the output and takes full responsibility for the content of this publication.
+
+## Conflicts of Interest
+
+The author declares no conflict of interest.
 
 ## References
-[1] A. Alfouly, M. A. Ismeil, I. Hamdan, "A novel inverter control strategy for maximum hosting capacity photovoltaic systems in distribution networks using power factor," PLOS ONE, vol. 20, e0310301, 2025. doi:10.1371/journal.pone.0310301
-[2] D. Chathurangi, U. Jayatunga, S. Perera, A. P. Agalgaonkar, T. Siyambalapitiya, "Comparative evaluation of solar PV hosting capacity enhancement using Volt-VAr and Volt-Watt control strategies," Renewable Energy, vol. 177, pp. 1063-1075, 2021. doi:10.1016/j.renene.2021.06.037
-[3] A. Ame-Oko and O. Lavrova, "Mitigation of limitation imposed on hosting
-    capacity in low voltage networks by their distribution transformer
-    loading and degradation considerations," IET Energy Systems
-    Integration, vol. 6, no. 4, pp. 465–478, 2024. doi:10.1049/esi2.12143
-[4] N. Qamar, A. Arshad, K. Mahmoud, M. Lehtonen, "Hosting capacity in
-    distribution grids: A review of definitions, performance indices,
-    determination methodologies, and enhancement techniques," Energy
-    Science & Engineering, vol. 11, no. 4, pp. 1536–1559, 2023. doi:10.1002/ese3.1389
-[5] R. Dissanayake, A. Wijethunge, J. Wijayakulasooriya, J. Ekanayake,
-    "Optimizing PV-Hosting Capacity with the Integrated Employment of
-    Dynamic Line Rating and Voltage Regulation," Energies, vol. 15,
-    no. 22, 8537, 2022. doi:10.3390/en15228537
-[6] S. Meinecke et al., "SimBench — A Benchmark Dataset of Electric Power
-    Systems to Compare Innovative Solutions based on Power Flow
-    Analysis," Energies, vol. 13, no. 12, 3290, 2020.
-[7] L. Thurner et al., "pandapower — An Open Source Python Tool for
-    Convenient Modeling, Analysis, and Optimization of Electric Power
-    Systems," IEEE Trans. Power Systems, vol. 33, no. 6, pp. 6510–6521,
-    2018.
-[8] IEEE Std 1547-2018, "IEEE Standard for Interconnection and
-    Interoperability of Distributed Energy Resources with Associated
-    Electric Power Systems Interfaces," 2018.
-[9] EN 50160, "Voltage characteristics of electricity supplied by public
-    electricity networks," CENELEC.
+
+[1] IEEE Std 1547-2018, "IEEE Standard for Interconnection and Interoperability of Distributed Energy Resources with Associated Electric Power Systems Interfaces," 2018.
+
+[2] Ahmed Alfouly, Mohamed A. Ismeil, I. Hamdan, "A novel inverter control strategy for maximum hosting capacity photovoltaic systems in distribution networks using power factor," PLOS ONE, vol. 20, e0310301, 2025. doi:10.1371/journal.pone.0310301
+
+[3] Agaba Ame-Oko and Olga Lavrova, "Mitigation of limitation imposed on hosting capacity in low voltage networks by their distribution transformer loading and degradation considerations," IET Energy Systems Integration, vol. 6, no. 4, pp. 465–478, 2024. doi:10.1049/esi2.12143
+
+[4] Naveed Qamar, Ammar Arshad, Karar Mahmoud, Matti Lehtonen, "Hosting capacity in distribution grids: A review of definitions, performance indices, determination methodologies, and enhancement techniques," Energy Science & Engineering, vol. 11, no. 4, pp. 1536–1559, 2023. doi:10.1002/ese3.1389
+
+[5] R. Dissanayake, A. Wijethunge, J. Wijayakulasooriya, J. Ekanayake, "Optimizing PV-Hosting Capacity with the Integrated Employment of Dynamic Line Rating and Voltage Regulation," Energies, vol. 15, no. 22, 8537, 2022. doi:10.3390/en15228537
+
+[6] D. Chathurangi, U. Jayatunga, S. Perera, A. P. Agalgaonkar, T. Siyambalapitiya, "Comparative evaluation of solar PV hosting capacity enhancement using Volt-VAr and Volt-Watt control strategies," Renewable Energy, vol. 177, pp. 1063-1075, 2021. doi:10.1016/j.renene.2021.06.037
+
+[7] S. Meinecke et al., "SimBench — A Benchmark Dataset of Electric Power Systems to Compare Innovative Solutions based on Power Flow Analysis," Energies, vol. 13, no. 12, 3290, 2020.
+
+[8] L. Thurner et al., "pandapower — An Open Source Python Tool for Convenient Modeling, Analysis, and Optimization of Electric Power Systems," IEEE Trans. Power Systems, vol. 33, no. 6, pp. 6510–6521, 2018.
+
+[9] EN 50160, "Voltage characteristics of electricity supplied by public electricity networks," CENELEC.

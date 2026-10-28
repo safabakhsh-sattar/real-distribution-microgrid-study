@@ -138,9 +138,22 @@ rural["distance_km"] = rural["bus"].map(dist_km)
 fig, ax = plt.subplots(figsize=(7, 5))
 ax.scatter(rural["distance_km"], rural["baseline_kW"], label="Voltage limit only")
 ax.scatter(rural["distance_km"], rural["baseline_thermal_kW"], marker="x", label="Voltage + thermal")
+bus_labels = []
 for _, r in rural.iterrows():
-    ax.annotate(int(r["bus"]), (r["distance_km"], r["baseline_kW"]),
-                textcoords="offset points", xytext=(4, 4), fontsize=8)
+    bus_labels.append(ax.annotate(str(int(r["bus"])), (r["distance_km"], r["baseline_kW"]),
+                                  textcoords="offset points", xytext=(4, 4), fontsize=8))
+# Buses at (almost) the same distance and capacity, e.g. 4 and 5, would print on top of each
+# other. Stack such labels upwards until their boxes no longer overlap.
+fig.canvas.draw()
+placed = []
+for t in bus_labels:
+    for _ in range(30):
+        box = t.get_window_extent()
+        if not any(box.overlaps(p) for p in placed):
+            break
+        dx, dy = t.xyann
+        t.xyann = (dx, dy + 9)
+    placed.append(t.get_window_extent())
 ax.set_xlabel("Feeder path length from transformer (km)")
 ax.set_ylabel("Hosting capacity (kW)")
 ax.set_title("Rural feeder: distance vs hosting capacity")
