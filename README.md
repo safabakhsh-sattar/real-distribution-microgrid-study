@@ -11,8 +11,9 @@ it?**
 The long-term scope of the repository is hosting capacity of renewables,
 electric vehicles and storage in real distribution networks, with a focus on
 microgrids, voltage and losses. The studies so far cover PV hosting capacity
-and inverter control: Study 1 (two feeders), Study 2a (six networks, snapshot)
-and Study 2b (three feeders, one year of profiles).
+and inverter control: Study 1 (two feeders), Study 2a (six networks, snapshot),
+Study 2b (three feeders, one year of profiles) and Study 3 (SimBench study
+cases, control variants and nine buses over one year).
 
 ## Key findings
 
@@ -57,8 +58,17 @@ above 100%. Urban buses whose voltage stays in the Volt-VAr dead band
 - Sizing the far bus by the snapshot capacity gave 273 hours per year above 1.05 pu at semiurb5 bus 51 and 49 hours at urban6 bus 17 (hourly means).
 - The tuned Volt-Watt curve (1.03-1.05 pu) removed every hourly violation in the nine cases but curtailed 8% to 32% of the available energy at the sizes studied. Each extra kW of nameplate delivered 61% to 79% of the average annual energy per kW.
 - Volt-VAr over the year at the far bus of each feeder (script 15, every daylight step verified): capacity rose from 106.5 to 165.1 kW at rural1 (+55.0%), from 110.5 to 174.1 kW at semiurb5 (+57.6%) and from 224.7 to 390.8 kW at urban6 (+73.9%).
-- The snapshot predicted a small penalty at rural1 and urban6, so the snapshot indicator did not hold over the year at two of the three far buses. Scripts 16 and 17 show that the code is not the cause: the year's PV peaks at about 58% of the snapshot PV.
+- The stored-point snapshot predicted a small penalty at rural1 and urban6, so the indicator from the stored point did not hold over the year at two of the three far buses. Scripts 16 and 17 show that the code is not the cause: the year's PV peaks at about 58% of the snapshot PV. Study 3 shows that the operating point of the snapshot is the cause.
 - Hourly voltage violations at the snapshot sizes fell to 3 hours or fewer at the far buses (script 14).
+
+### Study 3: study cases, control variants, nine buses over a year (scripts 19 to 21)
+
+- Snapshot at the SimBench study cases lW (load 10%, PV 80%) and lPV (load 10%, PV 95%), with the stored slack voltage of 1.025 pu (the SimBench slack of 1.055 pu violates 1.05 pu before any PV is added). The voltage limit binds first at 71 (lW) and 69 (lPV) of 113 buses, against 24 at the stored point.
+- The rule of r held at both cases (prediction P5): no gain for r < 1 (0 of 42, 0 of 44), gain at every bus with r >= 1.05 (69 of 69, 67 of 67). Median change at voltage-first buses +33.0% (lW) and +28.5% (lPV). No bus was in the dead band, so that rule was not tested.
+- Control variants: cos phi(P) of the VDE-AR-N 4105 type gained more than Volt-VAr at most voltage-first buses and lost more at every thermal-first bus (median -7.0% at lW). Volt-VAr on all PV units kept the pattern with larger gains and penalties. An inverter limit S = Pn (P priority) changed no result (0 of 113 at lPV); below 1.05 pu it binds only for P > 0.976 Pn.
+- Nine buses over one year (15-minute steps, every daylight step checked): Volt-VAr +55% to +74% at the four voltage-limited buses and -0.6% to -4.0% at the five thermally limited buses (P8); cos phi(P) +8% to +21% at the voltage-limited buses, less than Volt-VAr at each of them (P10).
+- Snapshot against year: the sign of the Volt-VAr effect matched the year at 4 of 9 buses from the stored point, 9 of 9 from lW and 8 of 9 from lPV (P9). lW gives the sign, not the size (+19.8% to +48.7% against +55% to +74%).
+- Predictions P5 to P10: [docs/predictions_19_21.md](docs/predictions_19_21.md). All held.
 
 Full write-up: [docs/paper-draft.md](docs/paper-draft.md)
 
@@ -90,7 +100,8 @@ semiurb5 (111 buses, 630 kVA) and urban6, scenario 0.
 Hosting capacity is the **additional** PV that can be connected at one bus on
 top of the existing generation. Studies 1 and 2a use a single deterministic
 snapshot (stored SimBench values); Study 2b uses one year of 15-minute SimBench
-profiles.
+profiles; Study 3 adds snapshots at the SimBench study cases lW and lPV and
+extends the year to nine buses.
 
 Why this data?
 - Open and fully reproducible (no confidentiality restrictions)
@@ -104,6 +115,7 @@ Why this data?
 - Largest feasible PV size found by binary search (0.1 kW tolerance)
 - Scenarios: no control, Volt-VAr (IEEE 1547-2018 default), Volt-Watt default (1.06-1.10 pu) and Volt-Watt adapted (1.03-1.05 pu)
 - Volt-Watt delivered power solved as the unique equilibrium by bisection
+- Study 3 adds cos phi(P) of the VDE-AR-N 4105 type (cos phi = 1 up to 0.5 Pn, 0.90 underexcited at Pn), Volt-VAr on all PV units, and an inverter limit S = Pn with active-power priority
 - Two capacities reported: nameplate (installed size) and delivered (active power actually injected)
 
 Details: [docs/methodology.md](docs/methodology.md) and Section 2 of the paper draft.
@@ -137,6 +149,9 @@ Run from the repository root.
 | 20 | `scripts/16_vvar_snapshot_check.py` | Checks the Volt-VAr code against the script 11 snapshot values (a few minutes) | `snapshot_vvar_check.csv` |
 | 21 | `scripts/17_snapshot_condition.py` | Compares the year's PV and load with the stored operating point (no power flow) | `snapshot_condition.csv` |
 | 22 | `scripts/18_heldout_indicator.py` | Held-out test of r: scenarios 1 and 2 of the six 1-LV networks, 180 buses in nine cases (about 30 min with `--workers 3`) | `heldout_summary.md`, `heldout_snapshot.csv` |
+| 23 | `scripts/19_studycase_snapshot.py` | Study 3 snapshot: study cases lW and lPV and the stored point, 113 buses plus the nine year buses; Volt-VAr, cos phi(P), all-PV Volt-VAr and S = Pn (23.3 min with `--workers 7`; `--slack stored/case/both`, `--list-cases`, `--resume`, `--summarize-only`, `--recheck`) | `studycase_snapshot.csv`, `studycase_summary.md` |
+| 24 | `scripts/20_year_controls_9buses.py` | Study 3 year: Volt-VAr and cos phi(P) capacity at nine buses, 15-minute steps, every daylight step checked; reuses the far-bus Volt-VAr results of script 15 (several hours; `--workers`, `--resume`, `--sampled` for a quick test) | `year_controls_hc.csv`, `year_controls_summary.md` |
+| 25 | `scripts/21_snapshot_vs_year.py` | Compares the snapshot signs (stored, lW, lPV) with the year signs at nine buses; checks the stored rows against script 11 (no power flow) | `snapshot_vs_year_summary.md` |
 
 `scripts/03b_diagnostic_transformer_check.py` is the diagnostic that revealed
 the transformer bottleneck. Scripts 03 to 06 are earlier steps whose
@@ -154,25 +169,24 @@ docs/       Paper draft, methodology, progress log, weekly reviews
 
 ## Limitations
 
-- Studies 1 and 2a are single snapshots; scenarios 1 and 2 of the six networks were used only for the held-out test (script 18), and other SimBench study cases are not evaluated
-- Study 2a: 113 buses of six networks (all buses of rural1, 20 evenly spaced buses of each other network); counts are sample counts, the indicator threshold is sample-specific, and the held-out test used other operating points of the same networks, not other networks
-- Study 2b: three feeders, three buses per feeder, one weather year, one fleet-average PV profile; energy, violation hours and losses use hourly means; the capacity search is a critical-step method with a verification set
-- Volt-VAr over the year was simulated at the far bus of each feeder only; the indicator was not tested over the year at other buses
-- Existing PV units are uncontrolled; only the added unit applies Volt-VAr or Volt-Watt
-- No inverter apparent-power limit is imposed
+- The snapshots are deterministic, at the stored point and at the study cases lW and lPV (with the stored slack voltage of 1.025 pu; the SimBench slack of 1.055 pu with the 1.10 pu limit was not run)
+- Study 2a: 113 buses of six networks (all buses of rural1, 20 evenly spaced buses of each other network); counts are sample counts, the indicator threshold is sample-specific, and the held-out test and the study cases are other operating points of the same networks, not other networks
+- Time series: three feeders, nine buses, one weather year, one fleet-average PV profile; energy, violation hours and losses use hourly means; the no-control capacity search is a critical-step method with a verification set
+- The snapshot-to-year test uses nine buses; 9 of 9 at lW is a count with small n
+- In most results the existing PV units are uncontrolled; Volt-VAr on all PV units was tested only in the study-case snapshots
+- Most results impose no inverter apparent-power limit; S = Pn was tested at the study cases only; Q-priority was not tested
 - Balanced single-phase equivalent (no phase imbalance)
 - Transformer loading is current-based (pandapower default); a criterion on apparent power would be about 3% stricter, effect not evaluated
 
 ## Current Status
 
-Study 1 (two feeders), Study 2a (six networks, snapshot) and Study 2b (three
-feeders, one year of profiles) are complete and written up in
+Studies 1, 2a, 2b and 3 are complete and written up in
 [docs/paper-draft.md](docs/paper-draft.md), organised around the central
-question above. Earlier statements that Volt-Watt outperforms Volt-VAr have
-been withdrawn: the default Volt-Watt curve is inactive within the feasible
-region.
+question above. The manuscript is being prepared for submission to Energies
+(MDPI). Earlier statements that Volt-Watt outperforms Volt-VAr have been
+withdrawn: the default Volt-Watt curve is inactive within the feasible region.
 
 Next steps:
-- Volt-VAr over the year at the near and middle buses of each feeder, to test the indicator with profiles
-- Inverter apparent-power limit (P-priority and Q-priority); other SimBench study cases; a held-out test on networks other than the six used here (for example LV subnets of the SimBench MV grids)
-- Storage and EV flexibility to lift the thermal ceiling
+- The year-based test at all sample buses, and a test on networks other than the six used here (for example LV subnets of the SimBench MV grids)
+- Study cases with their own slack voltage and the 1.10 pu limit; Q-priority inverters; network-wide control over the year
+- Storage and EV flexibility to lift the thermal ceiling; a power-based transformer criterion; diverse PV profiles; unbalanced three-phase models

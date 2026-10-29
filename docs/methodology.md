@@ -7,6 +7,8 @@ also records how it was reached. Sections 1 to 7 describe Study 1 (two
 feeders, snapshot); Section 8 describes Study 2a (six networks, snapshot,
 script 11) and Section 9 Study 2b (three feeders, one year of profiles,
 scripts 12, 12b, and 14 to 17; Section 9 covers Volt-VAr over the year).
+Section 10 describes Study 3 (SimBench study cases, control variants and nine
+buses over one year, scripts 19 to 21).
 
 ## 1. Networks and operating point
 
@@ -25,9 +27,10 @@ Power flow: pandapower, Newton-Raphson, balanced single-phase equivalent.
 
 Operating point: the values stored in the SimBench files (loads and existing
 PV as stored). The SimBench study-case scaling factors (for example low load
-with high PV, slack 1.055 pu) are **not** applied. Hosting capacity is
-therefore the additional PV connectable at one bus on top of the existing
-generation, in one snapshot.
+with high PV, slack 1.055 pu) are **not** applied in Studies 1 and 2; Study 3
+applies the load and PV factors of the cases lW and lPV (Section 10). Hosting
+capacity is the additional PV connectable at one bus on top of the existing
+generation.
 
 Why SimBench: open and reproducible, based on German DSO planning principles,
 no confidentiality restrictions.
@@ -58,7 +61,8 @@ limits hold at the same time.
 
 Only the added PV unit is controlled; existing PV is uncontrolled. Reactive
 power is expressed per unit of PV nameplate; no inverter apparent-power limit
-is imposed.
+is imposed. (Study 3 also tests Volt-VAr on all PV units and a limit S = Pn,
+Section 10.)
 
 | Scenario | Definition |
 |---|---|
@@ -73,9 +77,10 @@ curve, repeat. Up to 20 iterations, stop when Q changes by less than
 0.1 kvar. No convergence means infeasible.
 
 **Volt-Watt solution.** The delivered power satisfies
-P = P_n * r(V(P)), where r is the curtailment ratio. It is solved by
-bisection on P. Voltage rises with P and r falls with voltage, so the residual
-P_n * r(V(P)) - P is strictly decreasing in P and the root is unique.
+P = P_n * w(V(P)), where w is the Volt-Watt active power ratio (called w in
+the paper, so that r stays the screening ratio). It is solved by bisection on
+P. Voltage rises with P and w falls with voltage, so the residual
+P_n * w(V(P)) - P is strictly decreasing in P and the root is unique.
 
 ## 5. History of the method (decision log)
 
@@ -109,6 +114,10 @@ wrong or misleading and were corrected.
 | 23 | Checked whether the Volt-VAr code gives the snapshot values (script 16) | Reproduces the script 11 values at the three far buses (match: True) | The code is not the cause; the difference comes from the operating point |
 | 24 | Compared the stored operating point with the year (script 17) | Highest year PV is 57.6% to 58.6% of the snapshot PV at the three feeders; no quarter hour reaches 90% of it; stored loads are 1.08 to 2.37 times the year's peak | Explanation stated as consistent with the data, not a formal decomposition |
 | 25 | Held-out test of r (script 18): scenarios 1 and 2 of the six 1-LV networks, 180 buses in nine cases (three cases skipped, base case violates a limit) | Predictions P1 to P4, written before the run, all held: 0 of 151 thermal-first buses higher; 24 of 24 buses with r >= 1.05 higher; 61 of 61 dead-band buses unchanged; hc_nc and hc_vvar equal the smaller of their parts at 180 of 180 buses | Recorded as an out-of-sample test of operating points, not of networks. A first design with five other networks was dropped before any run, because those grids do not exist in SimBench 1-LV |
+| 26 | First run of script 19 at the study cases lW and lPV with their SimBench slack voltage | The slack voltage of the cases is 1.055 pu, above the 1.05 pu limit, so every base case violated the limit and no capacity was computed | Design changed before any result was seen (design note in docs/predictions_19_21.md): keep the stored slack of 1.025 pu and apply only the load and PV factors; option `--slack case` (1.055 pu with the 1.10 pu limit) kept but not run |
+| 27 | Script 19 summary showed that S = Pn changed Volt-VAr at 83 of 113 buses at lPV | This contradicts the bound of Section 10 (the limit binds only for P > 0.976 Pn). Cause: the all-PV Volt-VAr search left reactive power on the existing PV units, and the next controls started from it | `solve()` now resets the existing units to their stored Q before every control; `--recheck` recomputed thermal_element, v_pv_nc and hc_vvar_slim for 239 of 239 rows; S = Pn then changed 0 of 113 buses; first-limit labels, rule counts and dead-band result unchanged (commit d7f88c4) |
+| 28 | Volt-VAr and cos phi(P) over the year at nine buses (script 20) | Volt-VAr higher at all four voltage-limited buses (+55% to +74%) and lower at all five thermally limited buses (-0.6% to -4.0%); cos phi(P) +8% to +21% at the voltage-limited buses, less than Volt-VAr at each | Predictions P8 and P10 held; the gain–penalty split holds over the year at these buses |
+| 29 | Compared snapshot signs with year signs (script 21) | Volt-VAr sign correct at 4 of 9 buses from the stored point, 9 of 9 from lW, 8 of 9 from lPV (miss: rural1 bus 4, transformer at 86.9% before added PV) | The earlier failure of the indicator over the year comes from the operating point of the snapshot, not from the indicator; recommend a low-load, high-PV snapshot such as lW (this advice was formed after the results) |
 
 ## 6. Verification checks performed
 
@@ -126,21 +135,26 @@ wrong or misleading and were corrected.
 - Script 15: verify_steps counts the daylight steps that are not in the critical set (14,178 of 14,278 at rural1; 14,935 of 15,035 at semiurb5 and urban6). The 100 critical steps are checked by the bisection, so every daylight step is covered. No unresolved violations, and no non-converged power flow at or below the final capacity.
 - Script 16 reproduces the script 11 no-control and Volt-VAr capacities at the three far buses (match: True).
 - Script 18 (held-out, scenarios 1 and 2): hc_nc and hc_vvar equal the smaller of their parts within 0.2 kW at 180 of 180 buses. Three of twelve cases are skipped because the base case violates a limit (see Section 8).
+- Script 19 (study cases): hc_nc and hc_vvar equal the smaller of their parts at 113 of 113 buses at lW and at lPV; the same holds for Volt-VAr on all PV units; after the fix of step 27, `--recheck` recomputed 239 of 239 rows, with 0 non-converged S-limit power flows at or below its capacity.
+- Script 20 (nine buses over the year): every daylight step checked at the final capacity; no unresolved violation and no non-converged power flow at or below a capacity.
+- Script 21: the stored rows of script 19 reproduce script 11 at the seven buses in both samples (difference 0.0 kW for hc_nc and hc_vvar).
 
 ## 7. Known limitations and open items
 
-1. Study 1 and Study 2a are single snapshots at the stored SimBench operating point; study cases are not evaluated, except scenarios 1 and 2 in the held-out test (script 18). Study 2b uses annual profiles on three feeders only (three buses per feeder for capacity, the far bus for energy and for Volt-VAr over the year).
-2. Existing PV is uncontrolled; network-wide control is not modelled.
-3. No inverter apparent-power limit; no P-priority or Q-priority.
+1. The snapshots are deterministic, at the stored SimBench operating point, at scenarios 1 and 2 (held-out test, script 18) and at the study cases lW and lPV with the stored slack voltage (script 19). Annual profiles cover three feeders only (nine buses for capacity, the far bus for energy).
+2. Existing PV is uncontrolled in most results; Volt-VAr on all PV units was tested only in the study-case snapshots; network-wide control over the year is not modelled.
+3. Most results impose no inverter apparent-power limit; S = Pn with P-priority was tested at the study cases only; Q-priority was not tested.
 4. Balanced single-phase model; phase imbalance not modelled.
 5. Study 1: two feeders. Study 2a: 113 buses of six networks (all 13 buses of rural1, 20 evenly spaced buses of each other network), scenario 0 only in the snapshot study; scenarios 1 and 2 of the same networks were used only for the held-out test (script 18, nine cases, 180 buses); the counts are sample counts, not probabilities, and the indicator was not tested on other networks.
 6. The cause of the Volt-VAr reduction was measured on both feeders. Rural (script 10): active power through the transformer unchanged, reactive power supplied to the LV network up by 6.6–14.8 kvar, loading up by 1.0–1.8 percentage points at the same PV size. Urban (script 10b): active power through the limiting line unchanged, the absorbed reactive power (up to 31.8 kvar) flows through it, and Volt-VAr is inactive at the 26 buses whose voltage stays at or near the dead band (at most 1.0203 pu).
 7. Scripts 03 to 06 use the earlier Volt-Watt implementation (damped iteration, first no-control baseline). The paper uses scripts 08 and 08b.
 8. Transformer loading is current-based; a criterion on apparent power would be stricter by about 3% at the LV voltage found at the limit. The effect on the HC values has not been evaluated.
 9. Time series (Study 2b): one weather year (2016); one fleet-average PV profile for the added unit; hourly means for energy, violation hours and losses (15-minute peaks are hidden); the capacity search is a critical-step method with a verification set, validated on the full year for one bus (for Volt-VAr, script 15 checks every daylight step at the far buses); steps that already violate a limit without the added PV are excluded.
-10. Volt-VAr was simulated over the year only at the far bus of each feeder (hourly violations and 15-minute capacity). At two of the three far buses the snapshot sign did not hold over the year; the central question is answered mainly with snapshots, and the year result covers the far buses only.
+10. Volt-VAr and cos phi(P) were simulated over the year at nine buses (15-minute capacity; hourly violations at the far buses only). The snapshot-to-year comparison therefore rests on nine buses of three feeders; 9 of 9 at lW is a count with small n.
 11. The explanation of the snapshot-to-time-series ratio (PV factor and load at the binding step) is consistent with the numbers but is not a formal decomposition.
 12. Absolute energy values depend on the SimBench PV profile (about 650-660 kWh per kW of nameplate) and should be read as relative.
+13. At the study cases no bus was in the Volt-VAr dead band, so the dead-band rule was not tested there.
+14. The predictions P5 to P10 were written by the author; the file was registered on 26 Oct 2026 before any full run but committed together with the results.
 
 ## 8. Study 2a: six-network snapshot (script 11)
 
@@ -167,7 +181,19 @@ wrong or misleading and were corrected.
 - Figures 4 to 6: script 13 (`scripts/13_figures_study2.py`).
 - Volt-VAr over the year (scripts 14 to 17), far bus of each feeder only: script 14 gives hourly violation hours and losses (`results/vvar_annual_hour_summary.md`); script 15 gives the 15-minute capacity with the Volt-VAr iteration in every power flow, using the critical-step search and sets of script 12, and checks every daylight step at the final capacity (`results/vvar_timeseries_hc.csv`, `results/vvar_timeseries_summary.md`); script 16 checks that the Volt-VAr code reproduces the snapshot values of script 11; script 17 compares the year's PV and load with the stored operating point (`results/snapshot_condition.csv`). Run time: script 14 about 2.5 h with three workers; script 15 about 7 h in one process (rural1 123 min, semiurb5 60 min, urban6 237 min).
 
-## 10. Reproducibility
+## 10. Study 3: study cases, control variants and nine buses over a year (scripts 19 to 21)
+
+- Study cases: SimBench lW (load factor 0.1, PV factor 0.8) and lPV (0.1, 0.95). Their slack voltage of 1.055 pu violates the 1.05 pu limit before any PV is added, so the stored slack voltage of 1.025 pu is kept (as in the year profiles of Study 2b); only loads and PV change. The added unit has nameplate Pn and injects f_pv * Pn; Volt-VAr uses Q = ratio(V) * Pn. Limits, search, bus sample and derived quantities as in Section 8; the nine buses of Section 9 are added at each case and at the stored point.
+- cos phi(P) of the VDE-AR-N 4105 type on the added unit: cos phi = 1 for P <= 0.5 Pn, then 1 - 0.2 (P/Pn - 0.5), so 0.90 underexcited at Pn; Q = -P tan(phi); no voltage input. It absorbs 0.29 Pn at P = 0.8 Pn and 0.43 Pn at 0.95 Pn.
+- Volt-VAr on all PV units: the default curve on every unit, existing and added, each on its own bus voltage.
+- Apparent-power limit: S = Pn with active-power priority, |Q| <= sqrt(Pn^2 - P^2). Below 1.05 pu the default curve asks at most 0.44 * (1.05 - 1.02) / (1.08 - 1.02) = 0.22 Pn, so the limit binds only for P > sqrt(1 - 0.22^2) Pn = 0.976 Pn. With f_pv <= 0.898 the full 0.44 Pn is available, so the limit is searched only at lPV.
+- Script 19 flags: `--grids`, `--cases`, `--slack stored|case|both` (default stored), `--per-grid`, `--workers`, `--out`, `--resume`, `--list-cases`, `--summarize-only`, `--recheck`. Outputs: `results/studycase_snapshot.csv` (239 rows: 115 lW, 115 lPV, 9 stored), `results/studycase_summary.md`. Run time 23.3 min with seven workers.
+- Script 20: the year-based search of Section 9 (Q1) at the near, middle and far bus of each feeder, with Volt-VAr and with cos phi(P); the final capacity is checked on every daylight step. The three far-bus Volt-VAr results are reused from script 15 (`--no-reuse-far` recomputes them), so 15 searches are run. Flags: `--grids`, `--controls`, `--positions`, `--workers`, `--k-crit`, `--k-verify`, `--k-rand`, `--sampled`, `--resume`, `--out`. Outputs: `results/year_controls_hc.csv`, `results/year_controls_summary.md`.
+- Script 21: compares, for each of the nine buses and each snapshot point (stored, lW, lPV), the sign of the snapshot effect and the rule of r with the sign of the year effect (0.2 kW tolerance); no power flow. Output: `results/snapshot_vs_year_summary.md`.
+- Predictions P5 to P10 (`docs/predictions_19_21.md`, registered 26 Oct 2026, 11:20, before any full run): P5, the rules of Section 8 hold at each study case; P6, the S limit changes no result where f_pv <= 0.898; P7, Volt-VAr on all PV units is not higher at thermal-first buses and not lower at voltage-first buses than with one unit (medians); P8, over the year Volt-VAr is higher at the four voltage-limited buses and not higher at the five others; P9, the study-case snapshot agrees with the year sign at more of the nine buses than the stored point; P10, over the year cos phi(P) gains less than Volt-VAr at each voltage-limited bus. All held; the dead-band rule (P3) could not be tested at the study cases.
+- Results: voltage first at 71 (lW) and 69 (lPV) of 113 buses; r < 1 never higher (0 of 42, 0 of 44); r >= 1.05 always higher (69 of 69, 67 of 67). Median change of Volt-VAr at thermal-first / voltage-first buses: -1.48% / +32.98% (lW), -1.29% / +28.53% (lPV); cos phi(P): -6.99% / +45.61%, -9.81% / +55.19%; all-PV Volt-VAr: -2.13% / +44.53%, -1.78% / +42.30%; S = Pn: no change. Year: see decision-log steps 28 and 29.
+
+## 11. Reproducibility
 
 Script order, outputs and requirements are listed in the repository
 [README](../README.md). All results are produced from the open SimBench data

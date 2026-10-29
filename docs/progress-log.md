@@ -134,3 +134,19 @@
 - Week 6 review written to docs/weekly-reviews.md (commit 25c6cac)
 - Synced: README, methodology (Section 9, decision log steps 21-24, verification checks, limitations), this log, and the time-series design note (marked superseded)
 - Open: Week 7 checklist (commit these documents); defense sheet in Week 8
+
+## October 22, 2026 (held-out test of the indicator)
+- Added scripts/18_heldout_indicator.py: scenarios 1 and 2 of the six 1-LV networks, nine cases, 180 buses (three cases skipped, base case violates a limit); predictions P1 to P4 written on 21 October before the run; run time 31.4 min with three workers
+- Result: all predictions held. 0 of 151 thermal-first buses higher; 24 of 24 buses with r >= 1.05 higher; 61 of 61 dead-band buses unchanged; min-of-parts at 180 of 180 buses
+- Recorded as a test of new operating points of the same networks, not of new networks (SimBench 1-LV has no other grids)
+- Paper (Section 3.7.8) and documents updated; references [3] and [4] completed
+
+## October 26-29, 2026 (Study 3, references, paper for Energies)
+- Fifteen journal references and two standards (EN 50549-1, VDE-AR-N 4105) added and cited; reference list now 26 entries
+- Predictions P5 to P10 registered on 26 October, 11:20, before any full run (docs/predictions_19_21.md). Design note: the SimBench slack of the study cases (1.055 pu) violates the 1.05 pu limit, so the stored slack of 1.025 pu is kept
+- Added scripts/19_studycase_snapshot.py (study cases lW and lPV, 113 buses plus the nine year buses; Volt-VAr, cos phi(P), all-PV Volt-VAr, S = Pn; 23.3 min with seven workers), scripts/20_year_controls_9buses.py (Volt-VAr and cos phi(P) over the year at nine buses, every daylight step checked) and scripts/21_snapshot_vs_year.py
+- Result: the rule of r held at both study cases (0 of 42 and 0 of 44 higher for r < 1; 69 of 69 and 67 of 67 higher for r >= 1.05). Over the year Volt-VAr +55% to +74% at the four voltage-limited buses and -0.6% to -4.0% at the five thermally limited buses; cos phi(P) +8% to +21%. Snapshot sign = year sign at 4 of 9 buses from the stored point, 9 of 9 from lW, 8 of 9 from lPV. P5 to P10 held
+- Correction: script 19 left reactive power from the all-PV Volt-VAr search on the existing units (S = Pn appeared to change 83 of 113 buses at lPV, against the 0.976 Pn bound). solve() fixed; `--recheck` recomputed three columns for 239 rows; S = Pn now changes 0 of 113; labels and dead-band result unchanged (commit d7f88c4)
+- Paper: new title, Study 3 (Sections 2.8, 3.10 to 3.12), MDPI section order, shortened; Volt-Watt ratio renamed w(V) so that r is only the screening ratio; every table now has a caption (20 tables); MDPI template version built; reference [26] pages corrected to 363-375
+- Persian version and cover letter updated; defense sheet rewritten (kept outside the repository)
+- Open: own check of the equations in Word, cover-letter confirmation, APC decision, own reading of the new sections, submission
